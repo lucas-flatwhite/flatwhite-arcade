@@ -51,6 +51,7 @@ export function mountAttract(
   let frame = 0;
   let powered = true;
   let inView = true;
+  const hudText = { left: '', right: '' };
 
   const newRound = (): void => {
     state = createGame(COLS, ROWS, random);
@@ -76,10 +77,21 @@ export function mountAttract(
     }
   };
 
+  // The HUD is DOM text: write it only when it changes, since each write costs a style and layout pass.
   const writeHud = (): void => {
     const combo = state.combo >= 2 && world <= state.comboExpiresAt ? ` · ${state.combo}x` : '';
-    hud.left.textContent = `Len ${String(state.snake.length).padStart(2, '0')}${combo}`;
-    hud.right.textContent = `CPU ${String(state.cpu.alive ? state.cpu.body.length : 0).padStart(2, '0')}`;
+    const left = `Len ${String(state.snake.length).padStart(2, '0')}${combo}`;
+    const right = `CPU ${String(state.cpu.alive ? state.cpu.body.length : 0).padStart(2, '0')}`;
+
+    if (left !== hudText.left) {
+      hudText.left = left;
+      hud.left.textContent = left;
+    }
+
+    if (right !== hudText.right) {
+      hudText.right = right;
+      hud.right.textContent = right;
+    }
   };
 
   const draw = (): void => {
@@ -104,10 +116,15 @@ export function mountAttract(
     frame = 0;
     world += lastFrameAt === 0 ? 0 : Math.min(100, time - lastFrameAt);
     lastFrameAt = time;
+    let changed = false;
 
     if (overAt !== null) {
+      // The crashed body fades for a moment, then the board holds still until the restart.
+      changed = world - overAt < state.snake.length * 22 + 200;
+
       if (world - overAt >= RESTART_MS) {
         newRound();
+        changed = true;
       }
     } else {
       let ms = stepMs(state.snake.length);
@@ -120,11 +137,17 @@ export function mountAttract(
         lastStepAt += ms;
         advance();
         ms = stepMs(state.snake.length);
+        changed = true;
       }
     }
 
     effects = liveEffects(effects, world);
-    draw();
+
+    // Between steps the board only moves while an effect plays, so most frames draw nothing:
+    // about ten paints a second instead of sixty.
+    if (changed || effects.length > 0) {
+      draw();
+    }
 
     if (running()) {
       frame = window.requestAnimationFrame(tick);

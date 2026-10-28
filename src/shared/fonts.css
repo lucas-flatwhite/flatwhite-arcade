@@ -1,13 +1,7 @@
 /*
- * Anybody and Noto Sans KR set the words, as they do on lucasflatwhite.com.
- * Roboto Mono carries every number: scores, lengths and the labels on the board.
+ * Anybody sets the words, as it does on lucasflatwhite.com. Roboto Mono carries every
+ * number: scores, lengths, model numbers and the labels on the board. Both are woff2,
+ * split by script, so a page downloads only the letters it shows.
  */
 @import '@fontsource-variable/anybody/wdth.css';
-@import '@fontsource-variable/noto-sans-kr';
-
-@font-face {
-  font-family: 'Roboto Mono';
-  src: url('../assets/fonts/roboto-mono-400.ttf') format('truetype');
-  font-style: normal;
-  font-weight: 400;
-}
+@import '@fontsource/roboto-mono/400.css';

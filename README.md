@@ -43,7 +43,7 @@ npm run preview  # http://localhost:4173/arcade/
 index.html            # Lobby: pitch, lineup and the handheld
 snake/index.html      # Snake page: top bar, board, and the ready, pause and result cards
 src/
-  shared/             # Paper, ink and crema tokens; Anybody, Noto Sans KR and Roboto Mono
+  shared/             # Paper, ink and crema tokens; Anybody and Roboto Mono, plus Noto Sans KR for Korean pages
   lobby/              # Selection and keys, the live demo and its autopilot, styles
   snake/
     game.ts           # Rules: board size, steps, rival, combo, events

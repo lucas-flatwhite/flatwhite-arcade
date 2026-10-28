@@ -1,5 +1,6 @@
 import '../shared/base.css';
 import '../shared/fonts.css';
+import '../shared/fonts-ko.css';
 import './snake.css';
 import { effectsFor, liveEffects, type Effect } from './effects';
 import {
@@ -144,6 +145,7 @@ export function mountSnake(): void {
   let swipeFromButton = false;
   let ignoreClicksUntil = 0;
   let lastScore = '';
+  let lastPhase: GameState['phase'] | null = null;
 
   const show = (name: keyof typeof overlays | null): void => {
     for (const [key, element] of Object.entries(overlays)) {
@@ -168,6 +170,12 @@ export function mountSnake(): void {
       scoreText.textContent = text;
     }
 
+    // Touch the DOM only when something changed: a write every frame costs a style and layout pass.
+    if (state.phase === lastPhase) {
+      return;
+    }
+
+    lastPhase = state.phase;
     const live = state.phase === 'playing' || state.phase === 'paused';
     pauseButton.disabled = !live;
     pauseButton.setAttribute('aria-pressed', String(state.phase === 'paused'));

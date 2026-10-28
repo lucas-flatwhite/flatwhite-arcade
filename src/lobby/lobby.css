@@ -449,20 +449,13 @@ button.cart-row:hover {
   height: 8px;
   border-radius: 50%;
   background: #ff7a45;
+  /* Steady, like a real power light. A blink inside the zoomed handheld restyled the page every frame. */
   box-shadow: 0 0 8px #ff7a45;
-  animation: led-glow 2.4s ease-in-out infinite;
 }
 
 .device[data-power='off'] .led {
   background: #5a5a5d;
   box-shadow: none;
-  animation: none;
-}
-
-@keyframes led-glow {
-  50% {
-    opacity: 0.55;
-  }
 }
 
 .screen {
@@ -836,9 +829,5 @@ button.cart-row:hover {
   .start,
   .cartridge {
     transition: none;
-  }
-
-  .led {
-    animation: none;
   }
 }
