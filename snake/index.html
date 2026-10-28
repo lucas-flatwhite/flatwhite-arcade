@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Steer through a dense field of Korean and English words, race a CPU rival to the same food, and set off typographic bursts built with pretext."
+      content="Snake on a paper board. Drink espresso, chill your rival with cold brew, and trap it with your own body."
     />
-    <meta name="theme-color" content="#06070f" />
+    <meta name="theme-color" content="#fafafa" />
     <link rel="canonical" href="https://lucasflatwhite.com/arcade/snake/" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -15,7 +15,7 @@
     <meta property="og:title" content="Snake | Flatwhite Arcade" />
     <meta
       property="og:description"
-      content="Steer through a dense field of Korean and English words, race a CPU rival to the same food, and set off typographic bursts built with pretext."
+      content="Snake on a paper board. Drink espresso, chill your rival with cold brew, and trap it with your own body."
     />
     <meta property="og:url" content="https://lucasflatwhite.com/arcade/snake/" />
     <meta property="og:image" content="https://lucasflatwhite.com/arcade/og-image.png" />
@@ -29,28 +29,54 @@
     <title>Snake | Flatwhite Arcade</title>
   </head>
   <body class="play">
-    <main class="experience-page">
-      <section class="experience-shell" aria-label="lucas-flatwhite snake experience">
-        <div class="identity-strip" aria-label="Identity links">
-          <a class="identity-label" href="https://lucasflatwhite.com/">/lucas-flatwhite</a>
-          <p class="identity-score" data-experience-score>length 3 · cpu 3</p>
-          <nav class="identity-links" aria-label="External links">
-            <a href="/arcade/">Arcade</a>
-            <a href="https://github.com/lucas-flatwhite" target="_blank" rel="noreferrer">GitHub</a>
-            <a href="https://x.com/lucas_flatwhite" target="_blank" rel="noreferrer">Twitter</a>
-          </nav>
-        </div>
+    <main class="game">
+      <header class="game-bar">
+        <a class="game-back" href="/arcade/">Arcade</a>
+        <p class="game-score" data-score>length 3 · cpu 3</p>
+        <button class="game-pause" type="button" data-pause aria-pressed="false" disabled>Pause</button>
+      </header>
 
-        <div class="game-panel">
-          <div class="experience-stage" data-experience-root>
-            <canvas
-              class="experience-canvas"
-              data-experience-canvas
-              aria-label="Korean text snake experience"
-            ></canvas>
+      <div class="game-stage" data-stage>
+        <canvas class="game-canvas" data-canvas aria-label="Snake board"></canvas>
+
+        <section class="game-overlay" data-overlay="ready" aria-labelledby="ready-title">
+          <div class="overlay-card">
+            <h1 class="overlay-title" id="ready-title">Snake</h1>
+            <p class="overlay-hint">
+              <span class="hint-keys">Press an arrow key or WASD to start.</span>
+              <span class="hint-touch">Swipe anywhere to start.</span>
+            </p>
+            <ul class="legend">
+              <li><canvas data-icon="bean" aria-hidden="true"></canvas><span>Bean <b>+2</b></span></li>
+              <li><canvas data-icon="espresso" aria-hidden="true"></canvas><span>Espresso <b>+4</b>, combo +2</span></li>
+              <li><canvas data-icon="coldbrew" aria-hidden="true"></canvas><span>Cold brew slows the rival</span></li>
+              <li><canvas data-icon="rival" aria-hidden="true"></canvas><span>Trap the rival with your body <b>KO +3</b></span></li>
+            </ul>
+            <button class="overlay-action" type="button" data-action="start">Start</button>
           </div>
-        </div>
-      </section>
+        </section>
+
+        <section class="game-overlay" data-overlay="paused" aria-labelledby="paused-title" hidden>
+          <div class="overlay-card">
+            <h2 class="overlay-title" id="paused-title" lang="ko">일시정지</h2>
+            <p class="overlay-hint">Paused. Space, Enter or tap to go on.</p>
+            <button class="overlay-action" type="button" data-action="resume">Resume</button>
+          </div>
+        </section>
+
+        <section class="game-overlay" data-overlay="over" aria-labelledby="over-title" hidden>
+          <div class="overlay-card">
+            <p class="over-score" data-over-score>3</p>
+            <h2 class="overlay-title" id="over-title" lang="ko">퇴근</h2>
+            <p class="over-sub">get off work</p>
+            <p class="over-duel" data-over-duel></p>
+            <p class="over-best" data-over-best></p>
+            <button class="overlay-action" type="button" data-action="restart">Again</button>
+          </div>
+        </section>
+
+        <p class="sr-only" role="status" data-status></p>
+      </div>
     </main>
     <script type="module" src="/src/snake/main.ts"></script>
   </body>

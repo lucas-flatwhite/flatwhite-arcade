@@ -1,36 +1,31 @@
-/* The lobby shares the snake's night field so walking in and out feels like one room. */
+/* The lobby is a paper board like lucasflatwhite.com: white cards, ink type, one crema accent. */
 body.lobby {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
   min-height: 100dvh;
-  background:
-    radial-gradient(circle at 14% 18%, rgba(255, 98, 80, 0.18), transparent 24%),
-    radial-gradient(circle at 76% 12%, rgba(84, 245, 206, 0.18), transparent 20%),
-    radial-gradient(circle at 65% 72%, rgba(255, 204, 102, 0.12), transparent 28%),
-    linear-gradient(140deg, #06070f 0%, #170718 38%, #031b1f 100%);
-  background-attachment: fixed;
-  color: rgba(255, 255, 255, 0.88);
-  font-family: 'Roboto Mono', monospace;
 }
 
 .lobby-strip {
   display: flex;
   align-items: center;
-  min-height: 54px;
-  padding: 0.3rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(6, 8, 14, 0.76);
+  min-height: 52px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--line);
 }
 
-.lobby-home {
-  color: rgba(255, 255, 255, 0.78);
-  font-size: 0.82rem;
-  letter-spacing: 0.08em;
+.lobby-home,
+.lobby-footer a {
+  color: var(--ink-dim);
+  font-size: 0.9rem;
+  font-weight: 500;
   text-decoration: none;
-  transition: color 180ms ease;
 }
 
 .lobby-home:hover,
-.lobby-home:focus-visible {
-  color: rgba(255, 204, 102, 0.96);
+.lobby-home:focus-visible,
+.lobby-footer a:hover,
+.lobby-footer a:focus-visible {
+  color: var(--ink);
 }
 
 .lobby-floor {
@@ -41,18 +36,16 @@ body.lobby {
 
 .lobby-title {
   margin: 0;
-  font-family: 'Roboto Slab', serif;
-  font-size: clamp(2.4rem, 8vw, 4.75rem);
-  font-weight: 700;
-  line-height: 1.02;
-  letter-spacing: -0.01em;
+  font-size: clamp(2.6rem, 9vw, 5.5rem);
+  font-weight: 450;
+  letter-spacing: -0.055em;
+  line-height: 0.9;
 }
 
 .lobby-intro {
   margin: 1rem 0 0;
-  color: rgba(255, 204, 102, 0.88);
-  font-size: 0.86rem;
-  letter-spacing: 0.08em;
+  color: var(--ink-dim);
+  font-size: 1rem;
 }
 
 .cabinets {
@@ -68,12 +61,13 @@ body.lobby {
 .cabinet-empty {
   display: grid;
   align-content: start;
-  gap: 0.6rem;
+  gap: 0.5rem;
   height: 100%;
   min-height: 200px;
   padding: 1.25rem;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(5, 8, 14, 0.44);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--card);
 }
 
 .cabinet-link {
@@ -84,37 +78,47 @@ body.lobby {
 
 .cabinet-link:hover,
 .cabinet-link:focus-visible {
-  border-color: rgba(255, 204, 102, 0.72);
+  border-color: var(--ink);
   transform: translateY(-2px);
 }
 
 .cabinet-number {
-  color: rgba(255, 204, 102, 0.88);
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
+  justify-self: start;
+  padding: 1px 8px;
+  border-radius: var(--radius);
+  background: var(--crema);
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
 }
 
 .cabinet-name {
-  font-family: 'Roboto Slab', serif;
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: 1.9rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
   line-height: 1.1;
 }
 
 .cabinet-summary {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.82rem;
-  line-height: 1.6;
+  color: var(--ink-dim);
+  font-size: 0.92rem;
 }
 
 .cabinet-empty {
   border-style: dashed;
-  color: rgba(255, 255, 255, 0.4);
+  background: transparent;
+  color: var(--ink-dim);
 }
 
-.cabinet-empty .cabinet-number,
-.cabinet-empty .cabinet-summary {
-  color: inherit;
+.cabinet-empty .cabinet-number {
+  background: var(--line);
+}
+
+.lobby-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  padding: 20px 16px 28px;
+  border-top: 1px solid var(--line);
 }
 
 @media (prefers-reduced-motion: reduce) {

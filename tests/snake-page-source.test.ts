@@ -5,53 +5,34 @@ import { describe, expect, it } from 'vitest';
 const read = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8');
 const page = read('snake/index.html');
 const styles = read('src/snake/snake.css');
-const fonts = read('src/shared/fonts.css');
-const base = read('src/shared/base.css');
+const pkg = JSON.parse(read('package.json'));
 
-describe('snake page source contract', () => {
-  it('keeps only the compact top strip and removes the left intro panel', () => {
-    expect(page).toContain('<a class="identity-label" href="https://lucasflatwhite.com/">/lucas-flatwhite</a>');
-    expect(page).toContain('class="identity-strip"');
-    expect(page).toContain('class="identity-score" data-experience-score');
-    expect(page).toContain('<a href="/arcade/">Arcade</a>');
-    expect(page).toContain('<body class="play">');
-    expect(page).toContain('<meta name="theme-color" content="#06070f" />');
-    expect(page).not.toContain('class="experience-copy"');
-    expect(page).not.toContain('data-experience-restart');
-    expect(page).not.toContain('class="experience-overlay"');
-    expect(page).not.toContain('class="experience-hud"');
+describe('snake page', () => {
+  it('has a ready card, a pause card and a result card over the board', () => {
+    expect(page).toContain('data-overlay="ready"');
+    expect(page).toContain('data-overlay="paused" aria-labelledby="paused-title" hidden');
+    expect(page).toContain('data-overlay="over" aria-labelledby="over-title" hidden');
+    expect(page).toContain('role="status" data-status');
   });
 
-  it('opens every outside link in a new tab', () => {
-    const outside = [...page.matchAll(/<a href="(https:[^"]+)"([^>]*)>/g)];
-
-    expect(outside.length).toBeGreaterThan(0);
-    for (const [, , attributes] of outside) {
-      expect(attributes).toContain('target="_blank"');
-      expect(attributes).toContain('rel="noreferrer"');
+  it('explains every item on the board before the first round', () => {
+    for (const icon of ['bean', 'espresso', 'coldbrew', 'rival']) {
+      expect(page).toContain(`data-icon="${icon}"`);
     }
   });
-});
 
-describe('snake styles source contract', () => {
-  it('defines the one-screen game surface and identity overlay hooks', () => {
-    expect(styles).toContain('.experience-shell');
-    expect(styles).toContain('.game-panel');
-    expect(styles).toContain('.identity-strip');
-    expect(styles).toContain('.experience-stage');
-    expect(styles).toContain('touch-action: none;');
-    expect(styles).toContain('height: 100dvh;');
-    expect(styles).toContain('border-radius: 0;');
-    expect(styles).toContain("grid-template-areas: 'label score links';");
-    expect(styles).toContain("grid-template-areas:\n      'label links'\n      'score score';");
-    expect(styles).not.toContain('.experience-copy');
-    expect(styles).not.toContain('.experience-hud');
+  it('gives touch players a pause button and a way back to the lobby', () => {
+    expect(page).toContain('<button class="game-pause" type="button" data-pause');
+    expect(page).toContain('<a class="game-back" href="/arcade/">Arcade</a>');
   });
 
-  it('locks scrolling only on the game page and loads fonts through the bundler', () => {
+  it('keeps the board still under a finger and the page from scrolling', () => {
+    expect(styles).toContain('touch-action: none;');
     expect(styles).toContain('body.play {\n  overflow: hidden;');
-    expect(base).not.toMatch(/body\s*\{[^}]*overflow:\s*hidden/);
-    expect(fonts).toContain("url('../assets/fonts/roboto-mono-400.ttf')");
-    expect(fonts).not.toContain("url('/assets/");
+  });
+
+  it('no longer ships the word field or its layout engine', () => {
+    expect(pkg.dependencies).not.toHaveProperty('@chenglou/pretext');
+    expect(page).not.toContain('data-experience');
   });
 });

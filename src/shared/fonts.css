@@ -1,17 +1,9 @@
-/* Roboto Slab carries headlines and bursts; Roboto Mono carries every label and score. */
-@font-face {
-  font-family: 'Roboto Slab';
-  src: url('../assets/fonts/roboto-slab-300.ttf') format('truetype');
-  font-style: normal;
-  font-weight: 300;
-}
-
-@font-face {
-  font-family: 'Roboto Slab';
-  src: url('../assets/fonts/roboto-slab-700.ttf') format('truetype');
-  font-style: normal;
-  font-weight: 700;
-}
+/*
+ * Anybody and Noto Sans KR set the words, as they do on lucasflatwhite.com.
+ * Roboto Mono carries every number: scores, lengths and the labels on the board.
+ */
+@import '@fontsource-variable/anybody/wdth.css';
+@import '@fontsource-variable/noto-sans-kr';
 
 @font-face {
   font-family: 'Roboto Mono';

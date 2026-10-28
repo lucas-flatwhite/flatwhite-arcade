@@ -4,7 +4,7 @@ Small games from [lucasflatwhite.com](https://lucasflatwhite.com), served at [lu
 
 | Cabinet | Path | What it is |
 |---|---|---|
-| 01 Snake | `/arcade/snake/` | Snake in a dense field of Korean and English words. Race a CPU rival to the same food and set off typographic bursts laid out with [pretext](https://github.com/chenglou/pretext). |
+| 01 Snake | `/arcade/snake/` | Snake on a paper board. Race a CPU rival to the beans, drink espresso for a combo, chill the rival with cold brew, and trap it with your own body for a KO. |
 
 ## Run it
 
@@ -23,21 +23,32 @@ npm run preview  # http://localhost:4173/arcade/
 - lucasflatwhite.com rewrites `/arcade/*` to this project, the same way it serves `/ai-timeline-log/`. The old `/play` address redirects to `/arcade/snake/`.
 - Pages run on the same origin as the site, so the snake's best score in `localStorage` (`lucas-flatwhite:best-length`) carries over from the old `/play` page.
 
+## Snake
+
+- **Board**: The short side always holds 18 cells, so a phone (18×38) and a desktop (30×18) play the same game at a size a thumb can follow. A round in play keeps its cells when the field resizes, as it does when a phone's URL bar folds away.
+- **Rules** (`src/snake/game.ts`): No DOM and no clock. `step` takes the world time and returns what happened (`bean`, `special`, `drop`, `ko`, `cpu-ate`, `death`), so `tests/snake-game.test.ts` plays rounds cell by cell.
+- **Effects** (`src/snake/effects.ts`): Each event gets at most three effects, none longer than 720 ms: a crema ring, a gulp that runs down the body, a label beside the head, and a short shake on a crash. None lays out text per frame, so the cost per frame stays flat on any device. With reduced motion, rings stay still and the gulp and shake are off.
+- **Drawing** (`src/snake/render.ts`): The page, board and dot grid are painted once per resize into a layer. Each frame copies that layer and draws the pieces on top.
+- **Loop and input** (`src/snake/main.ts`): The loop sleeps whenever nothing moves: on the ready, pause and result cards. A swipe turns as soon as the finger has moved about half a cell and can chain turns without lifting (`src/snake/swipe.ts`). The round waits for the first turn, pauses with Space, Enter, P, Escape or the Pause button, and pauses itself when the tab is hidden.
+
 ## Layout
 
 ```
 index.html            # Lobby: one cabinet per game
-snake/index.html      # Snake page shell and identity strip
+snake/index.html      # Snake page: top bar, board, and the ready, pause and result cards
 src/
-  shared/             # Resets and the Roboto Slab / Roboto Mono faces every page uses
+  shared/             # Paper, ink and crema tokens; Anybody, Noto Sans KR and Roboto Mono
   lobby/              # Lobby styles
   snake/
-    experience.ts     # Engine: rules, CPU rival, word field, bursts, input, rendering
-    data.ts           # Tuning (playfieldConfig), word pool, burst phrases
-    snake.css         # Full-screen game surface and top strip
+    game.ts           # Rules: board size, steps, rival, combo, events
+    effects.ts        # Short effects that answer each event
+    render.ts         # Board layer, pieces and effects on canvas
+    swipe.ts          # Finger to turns
+    main.ts           # Loop, keys, pointer, cards, best length
+    snake.css
   assets/fonts/
 public/               # Favicon and share image, served under /arcade/
-tests/                # Source contracts for the engine, pages, styles and type rules
+tests/                # Rules, effects and swipe behaviour; page and type checks
 ```
 
 ## Adding a cabinet
