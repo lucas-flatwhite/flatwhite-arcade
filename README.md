@@ -18,9 +18,10 @@ npm run preview  # http://localhost:4173/arcade/
 
 ## How it is served
 
+- `public/og-image.png` is the share image for every page. Its source is `scripts/og-image.html`, drawn with the same handheld as the arcade card on lucasflatwhite.com.
 - Vite builds every page under `dist/arcade/` with `base: '/arcade/'`, so the files sit at the same paths here and on lucasflatwhite.com.
 - This repository deploys as its own Vercel project (`flatwhite-arcade.vercel.app`). `vercel.json` sends `/` to `/arcade/` and adds trailing slashes.
-- lucasflatwhite.com rewrites `/arcade/*` to this project, the same way it serves `/ai-timeline-log/`. The old `/play` address redirects to `/arcade/snake/`.
+- lucasflatwhite.com rewrites `/arcade/*` to this project, the same way it serves `/ai-timeline-log/`. The homepage's arcade card links to the lobby, and the old `/play` address is gone.
 - Pages run on the same origin as the site, so the snake's best score in `localStorage` (`lucas-flatwhite:best-length`) carries over from the old `/play` page.
 
 ## Lobby

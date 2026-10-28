@@ -1,0 +1,126 @@
+<!doctype html>
+<!--
+  The share image for every arcade page (public/og-image.png, 1200 by 630).
+  The handheld is the one the lobby card on lucasflatwhite.com draws.
+  To redraw it, open this file in Chrome at a 1200 by 630 window and save a
+  screenshot of the page over public/og-image.png.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Flatwhite Arcade share image</title>
+<style>
+  @font-face { font-family: 'Anybody'; font-weight: 100 900; font-stretch: 50% 150%; src: url(../node_modules/@fontsource-variable/anybody/files/anybody-latin-wdth-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Roboto Mono'; font-weight: 400; src: url(../node_modules/@fontsource/roboto-mono/files/roboto-mono-latin-400-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Roboto Mono'; font-weight: 500; src: url(../node_modules/@fontsource/roboto-mono/files/roboto-mono-latin-500-normal.woff2) format('woff2'); }
+  html, body { margin: 0; }
+  body {
+    width: 1200px; height: 630px; overflow: hidden; position: relative;
+    background: linear-gradient(to top, rgba(23, 23, 23, 0.04), rgba(23, 23, 23, 0) 35%), #f4f4f2;
+    color: #171717; font-family: 'Anybody', system-ui, sans-serif;
+  }
+  .copy { position: absolute; left: 88px; top: 96px; width: 600px; }
+  .tags { display: flex; gap: 12px; margin: 0 0 30px; font-family: 'Roboto Mono', monospace; font-size: 18px; letter-spacing: 0.14em; text-transform: uppercase; }
+  .tags span { padding: 6px 14px; border-radius: 999px; background: #171717; color: #ffc457; }
+  .tags span + span { background: #ffc457; color: #171717; }
+  h1 { margin: 0; font-size: 104px; line-height: 0.92; font-weight: 720; font-stretch: 125%; letter-spacing: -0.035em; }
+  p.line { margin: 34px 0 0; max-width: 600px; color: #4d4d4d; font-size: 30px; line-height: 1.35; }
+  .url { position: absolute; left: 88px; bottom: 64px; font-family: 'Roboto Mono', monospace; font-size: 18px; letter-spacing: 0.12em; color: #8a8a86; text-transform: lowercase; }
+  .hand { position: absolute; right: 120px; top: 52px; height: 526px; aspect-ratio: 410 / 720; }
+  .hand svg { display: block; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 26px 34px rgba(23, 23, 23, 0.18)); }
+  .hand text { font-family: 'Anybody', system-ui, sans-serif; }
+  .hand .arcade-small { letter-spacing: 0.14em; }
+  .hand .arcade-logo { font-stretch: 125%; font-weight: 720; letter-spacing: -0.03em; }
+  .hand .arcade-logo .arcade-small { font-stretch: 100%; font-weight: 400; letter-spacing: 0.2em; }
+</style>
+</head>
+<body>
+  <div class="copy">
+    <p class="tags"><span>FA-01</span><span>Snake</span></p>
+    <h1>Flatwhite<br />Arcade</h1>
+    <p class="line">Small games, one cartridge at a time. Starting with Snake.</p>
+  </div>
+  <p class="url">lucasflatwhite.com/arcade</p>
+  <div class="hand">
+  <svg viewBox="0 0 410 720" overflow="visible">
+    <defs>
+      <pattern id="arcade-grip" width="7" height="10" patternUnits="userSpaceOnUse" x="44" y="1">
+        <rect width="2" height="10" fill="#d3d3ce" />
+      </pattern>
+      <pattern id="arcade-dots" width="32" height="32" patternUnits="userSpaceOnUse" x="101" y="156">
+        <circle cx="16" cy="16" r="1.4" fill="#d9d9d3" />
+      </pattern>
+    </defs>
+
+    <rect x="44" y="0" width="322" height="64" rx="8" fill="#e6e6e1" stroke="#d3d3ce" />
+    <rect x="45" y="1" width="320" height="10" fill="url(#arcade-grip)" />
+    <rect x="68" y="16" width="274" height="17" rx="3" fill="#ffc457" />
+    <text class="arcade-small" x="205" y="28" text-anchor="middle" font-size="10" fill="#171717">FA-01 · SNAKE</text>
+
+    <path
+      d="M30 40H380A30 30 0 0 1 410 70V624A96 96 0 0 1 314 720H30A30 30 0 0 1 0 690V70A30 30 0 0 1 30 40Z"
+      fill="#ffffff"
+      stroke="#dededa"
+    />
+    <text class="arcade-small" x="32" y="78" font-size="9" fill="#a5a5a0">◀ OFF · ON ▶</text>
+    <text class="arcade-small" x="378" y="78" text-anchor="end" font-size="9" fill="#a5a5a0">FA-01 · MADE IN PAPER</text>
+
+    <path
+      d="M40 94H370A14 14 0 0 1 384 108V328A46 46 0 0 1 338 374H40A14 14 0 0 1 26 360V108A14 14 0 0 1 40 94Z"
+      fill="#2a2a2d"
+    />
+    <rect x="44" y="111" width="84" height="2" fill="#ffc457" />
+    <rect x="282" y="111" width="84" height="2" fill="#55555a" />
+    <text class="arcade-small" x="205" y="115" text-anchor="middle" font-size="8" fill="#8d8d90">PAPER MATRIX DISPLAY</text>
+    <circle cx="61" cy="242" r="8" fill="#ff7a3d" opacity="0.25" />
+    <circle cx="61" cy="242" r="4" fill="#ff7a3d" />
+
+    <rect x="92" y="128" width="274" height="228" rx="4" fill="#fbfbf8" />
+    <text class="arcade-small" x="100" y="143" font-size="8" fill="#171717">LEN 03</text>
+    <text class="arcade-small" x="358" y="143" text-anchor="end" font-size="8" fill="#171717">CPU 03</text>
+    <rect x="92" y="150" width="274" height="1" fill="#ecece7" />
+    <rect x="101" y="156" width="256" height="192" rx="3" fill="url(#arcade-dots)" stroke="#ecece7" />
+    <g transform="rotate(-25 341 220)">
+      <ellipse cx="341" cy="220" rx="6" ry="8" fill="#6b4423" />
+      <rect x="340" y="214" width="2" height="12" rx="1" fill="#c99a6b" />
+    </g>
+
+    <rect x="263" y="222" width="28" height="28" rx="6" fill="#171717" />
+    <rect x="231" y="222" width="28" height="28" rx="6" fill="#171717" />
+    <rect x="199" y="222" width="28" height="28" rx="6" fill="#171717" />
+    <rect x="199" y="254" width="28" height="28" rx="6" fill="#171717" />
+    <rect x="264" y="319" width="26" height="26" rx="6" fill="none" stroke="#171717" stroke-width="2.5" />
+    <rect x="296" y="319" width="26" height="26" rx="6" fill="none" stroke="#171717" stroke-width="2.5" />
+    <rect x="296" y="287" width="26" height="26" rx="6" fill="none" stroke="#171717" stroke-width="2.5" />
+
+    <text class="arcade-logo" x="32" y="414" font-size="25" fill="#171717">
+      Flatwhite<tspan class="arcade-small" dx="6" font-size="10">ARCADE</tspan>
+    </text>
+
+    <rect x="72" y="457" width="32" height="96" rx="5" fill="#0b0b0b" />
+    <rect x="40" y="489" width="96" height="32" rx="5" fill="#0b0b0b" />
+    <rect x="72" y="454" width="32" height="96" rx="5" fill="#171717" />
+    <rect x="40" y="486" width="96" height="32" rx="5" fill="#171717" />
+
+    <g transform="rotate(-25 306 485)">
+      <rect x="240" y="454" width="132" height="62" rx="31" fill="#f1f1ee" />
+      <circle cx="272" cy="488" r="26" fill="#0b0b0b" />
+      <circle cx="272" cy="485" r="26" fill="#171717" />
+      <circle cx="340" cy="488" r="26" fill="#c98a1c" />
+      <circle cx="340" cy="485" r="26" fill="#ffc457" />
+    </g>
+    <g transform="rotate(-25 175 574)" fill="#cfcfca">
+      <rect x="122" y="569" width="44" height="11" rx="5.5" />
+      <rect x="184" y="569" width="44" height="11" rx="5.5" />
+    </g>
+    <g transform="rotate(-25 333 567)" fill="#e2e2dd">
+      <rect x="303" y="542" width="5" height="50" rx="2.5" />
+      <rect x="317" y="542" width="5" height="50" rx="2.5" />
+      <rect x="331" y="542" width="5" height="50" rx="2.5" />
+      <rect x="345" y="542" width="5" height="50" rx="2.5" />
+      <rect x="359" y="542" width="5" height="50" rx="2.5" />
+    </g>
+  </svg>
+  </div>
+</body>
+</html>
