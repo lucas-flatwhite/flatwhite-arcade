@@ -3,14 +3,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Small games from lucasflatwhite.com, starting with Snake on a paper board." />
-    <meta name="theme-color" content="#fafafa" />
+    <meta name="description" content="Small games from lucasflatwhite.com, one cartridge at a time. Starting with Snake." />
+    <meta name="theme-color" content="#f4f4f2" />
     <link rel="canonical" href="https://lucasflatwhite.com/arcade/" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Flatwhite Arcade" />
-    <meta property="og:description" content="Small games from lucasflatwhite.com, starting with Snake on a paper board." />
+    <meta property="og:description" content="Small games from lucasflatwhite.com, one cartridge at a time. Starting with Snake." />
     <meta property="og:url" content="https://lucasflatwhite.com/arcade/" />
     <meta property="og:image" content="https://lucasflatwhite.com/arcade/og-image.png" />
     <meta property="og:image:width" content="600" />
@@ -23,32 +23,133 @@
     <title>Flatwhite Arcade</title>
   </head>
   <body class="lobby">
-    <header class="lobby-strip">
-      <a class="lobby-home" href="https://lucasflatwhite.com/">/lucas-flatwhite</a>
+    <header class="site-bar">
+      <a class="wordmark" href="/arcade/">Flatwhite Arcade</a>
+      <nav class="site-nav" aria-label="Elsewhere">
+        <a href="https://github.com/lucas-flatwhite/flatwhite-arcade" target="_blank" rel="noreferrer">Source</a>
+        <a href="https://lucasflatwhite.com/">lucasflatwhite.com ↗</a>
+      </nav>
     </header>
-    <main class="lobby-floor">
-      <h1 class="lobby-title">Flatwhite Arcade</h1>
-      <p class="lobby-intro">Small games, one cabinet at a time.</p>
-      <ol class="cabinets">
-        <li class="cabinet">
-          <a class="cabinet-link" href="/arcade/snake/">
-            <span class="cabinet-number">01</span>
-            <span class="cabinet-name">Snake</span>
-            <span class="cabinet-summary">Race a rival to the beans, drink espresso, and trap it with your own body.</span>
-          </a>
-        </li>
-        <li class="cabinet cabinet-empty" aria-label="Next cabinet, coming later">
-          <span class="cabinet-number">02</span>
-          <span class="cabinet-name">Next cabinet</span>
-          <span class="cabinet-summary">Being built.</span>
-        </li>
-      </ol>
+
+    <main class="floor" data-lobby>
+      <p class="pitch-tags">
+        <span data-pitch-model>FA-01</span>
+        <span class="status" data-pitch-status>Available</span>
+      </p>
+      <h1 class="pitch-title" data-pitch-title>Snake</h1>
+      <p class="pitch-copy" data-pitch-description>
+        A paper board, a rival who wants the same beans, and an espresso when you need it.
+      </p>
+      <p class="pitch-meta" data-pitch-meta>1P vs CPU · Arrows, WASD, swipe</p>
+
+      <a class="start" href="/arcade/snake/" data-start>
+        <span class="start-dot" aria-hidden="true"></span>
+        <span data-start-label>Start</span>
+        <kbd class="start-key">Enter</kbd>
+      </a>
+
+      <section class="lineup" aria-labelledby="lineup-title">
+        <h2 class="lineup-head"><span id="lineup-title">Lineup</span><span>03 slots</span></h2>
+        <ol class="lineup-list">
+          <li>
+            <button
+              class="cart-row"
+              type="button"
+              aria-pressed="true"
+              data-cart
+              data-model="FA-01"
+              data-status="Available"
+              data-title="Snake"
+              data-description="A paper board, a rival who wants the same beans, and an espresso when you need it."
+              data-meta="1P vs CPU · Arrows, WASD, swipe"
+              data-href="/arcade/snake/"
+              data-label="FA-01 · Snake"
+              data-best
+            >
+              <span class="cart-icon" aria-hidden="true"><span></span></span>
+              <span class="cart-model">FA-01</span>
+              <span class="cart-name">Snake</span>
+              <span class="cart-chip">Play</span>
+            </button>
+          </li>
+          <li>
+            <button
+              class="cart-row is-dev"
+              type="button"
+              aria-pressed="false"
+              data-cart
+              data-model="FA-02"
+              data-status="In development"
+              data-title="Untitled"
+              data-description="The next cartridge is still on the workbench. It will slot in here when it is ready."
+              data-meta="TBA"
+              data-label="Empty slot"
+            >
+              <span class="cart-icon" aria-hidden="true"><span></span></span>
+              <span class="cart-model">FA-02</span>
+              <span class="cart-name">Untitled</span>
+              <span class="cart-chip">In dev</span>
+            </button>
+          </li>
+          <li class="cart-row is-open">
+            <span class="cart-icon" aria-hidden="true"></span>
+            <span class="cart-model">FA-03</span>
+            <span class="cart-name">Open slot</span>
+          </li>
+        </ol>
+      </section>
+
+      <div class="device-stage">
+        <div class="device" data-device data-power="on" role="img" aria-label="A handheld playing a live demo of Snake">
+          <div class="cartridge" data-cartridge>
+            <span class="cartridge-grip"></span>
+            <span class="cartridge-label" data-cartridge-label>FA-01 · Snake</span>
+          </div>
+          <span class="volume"></span>
+          <span class="volume-label">Vol</span>
+
+          <div class="device-body">
+            <p class="device-top"><span>◀ Off · On ▶</span><span data-device-model>FA-01 · Made in paper</span></p>
+
+            <div class="bezel">
+              <p class="bezel-stripe"><span class="stripe-crema"></span>Paper matrix display<span class="stripe-grey"></span></p>
+              <div class="bezel-row">
+                <p class="power"><span class="led"></span>Power</p>
+                <div class="screen">
+                  <p class="screen-hud"><span data-hud-left>Len 03</span><span data-hud-right>CPU 03</span></p>
+                  <canvas class="screen-canvas" data-screen-canvas></canvas>
+                  <p class="screen-empty" data-screen-empty hidden>No cartridge<small>FA-02 is still in the workshop</small></p>
+                </div>
+              </div>
+            </div>
+
+            <p class="device-logo">Flatwhite <span>Arcade</span></p>
+
+            <div class="controls">
+              <span class="dpad">
+                <span class="dpad-h"></span><span class="dpad-v"></span><span class="dpad-dimple"></span>
+                <span class="dpad-arrow is-up"></span><span class="dpad-arrow is-down"></span>
+                <span class="dpad-arrow is-left"></span><span class="dpad-arrow is-right"></span>
+              </span>
+              <span class="ab">
+                <span class="ab-well"></span>
+                <span class="ab-button is-b"></span><span class="ab-button is-a"></span>
+                <span class="ab-label is-b">B</span><span class="ab-label is-a">A</span>
+              </span>
+            </div>
+
+            <div class="controls-low">
+              <span class="pills">
+                <span class="pill"><span></span>Select</span>
+                <span class="pill"><span></span>Start</span>
+              </span>
+              <span class="grille"><span></span><span></span><span></span><span></span><span></span><span></span></span>
+              <span class="phones"><span></span>Phones</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
-    <footer class="lobby-footer">
-      <a href="https://github.com/lucas-flatwhite/flatwhite-arcade" target="_blank" rel="noreferrer">Source</a>
-      <a href="https://github.com/lucas-flatwhite" target="_blank" rel="noreferrer">GitHub</a>
-      <a href="https://x.com/lucas_flatwhite" target="_blank" rel="noreferrer">Twitter</a>
-    </footer>
     <script type="module" src="/src/lobby/main.ts"></script>
   </body>
 </html>

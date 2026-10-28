@@ -23,6 +23,12 @@ npm run preview  # http://localhost:4173/arcade/
 - lucasflatwhite.com rewrites `/arcade/*` to this project, the same way it serves `/ai-timeline-log/`. The old `/play` address redirects to `/arcade/snake/`.
 - Pages run on the same origin as the site, so the snake's best score in `localStorage` (`lucas-flatwhite:best-length`) carries over from the old `/play` page.
 
+## Lobby
+
+- **Layout** (`index.html`, `src/lobby/lobby.css`): The selected game's pitch on the left (model, status, title, copy, Start) with the lineup under it, and a paper handheld on the right. On a phone they stack, with the handheld between the title and the copy. The handheld is plain HTML and CSS and shrinks as a whole with `zoom` on shorter or narrower screens.
+- **Live demo** (`src/lobby/attract.ts`): The handheld's screen plays Snake by itself with the real rules and renderer, steered by `src/lobby/autopilot.ts`. It runs only while the screen is in view, the tab is visible and the slot holds a game; with reduced motion it shows one still.
+- **Lineup**: Each cartridge is a row whose `data-*` attributes carry its pitch. Choosing a row swaps the pitch and lifts the cartridge out and back in. ↑ ↓ choose, Enter starts. Start is a real link, so it works before any script runs. The list scrolls inside its own box, so the page stays one screen as games are added.
+
 ## Snake
 
 - **Board**: The short side always holds 18 cells, so a phone (18×38) and a desktop (30×18) play the same game at a size a thumb can follow. A round in play keeps its cells when the field resizes, as it does when a phone's URL bar folds away.
@@ -34,11 +40,11 @@ npm run preview  # http://localhost:4173/arcade/
 ## Layout
 
 ```
-index.html            # Lobby: one cabinet per game
+index.html            # Lobby: pitch, lineup and the handheld
 snake/index.html      # Snake page: top bar, board, and the ready, pause and result cards
 src/
   shared/             # Paper, ink and crema tokens; Anybody, Noto Sans KR and Roboto Mono
-  lobby/              # Lobby styles
+  lobby/              # Selection and keys, the live demo and its autopilot, styles
   snake/
     game.ts           # Rules: board size, steps, rival, combo, events
     effects.ts        # Short effects that answer each event
@@ -51,8 +57,8 @@ public/               # Favicon and share image, served under /arcade/
 tests/                # Rules, effects and swipe behaviour; page and type checks
 ```
 
-## Adding a cabinet
+## Adding a cartridge
 
 1. Put the page at `<game>/index.html` and its code in `src/<game>/`.
 2. Add the page to `build.rollupOptions.input` in `vite.config.ts`.
-3. Add a `cabinet-link` to `index.html` with its full `/arcade/<game>/` path.
+3. Add a `cart-row` button to the lineup in `index.html` with its `data-model`, `data-status`, `data-title`, `data-description`, `data-meta`, `data-label` and `data-href="/arcade/<game>/"`, and update the slot count.
