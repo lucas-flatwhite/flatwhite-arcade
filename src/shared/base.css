@@ -1,0 +1,21 @@
+/* The few resets every arcade page shares. Each game styles its own screen. */
+:root {
+  color-scheme: dark;
+  --crema: #ffc457;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--crema);
+  outline-offset: 4px;
+}

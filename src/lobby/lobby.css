@@ -1,0 +1,129 @@
+/* The lobby shares the snake's night field so walking in and out feels like one room. */
+body.lobby {
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at 14% 18%, rgba(255, 98, 80, 0.18), transparent 24%),
+    radial-gradient(circle at 76% 12%, rgba(84, 245, 206, 0.18), transparent 20%),
+    radial-gradient(circle at 65% 72%, rgba(255, 204, 102, 0.12), transparent 28%),
+    linear-gradient(140deg, #06070f 0%, #170718 38%, #031b1f 100%);
+  background-attachment: fixed;
+  color: rgba(255, 255, 255, 0.88);
+  font-family: 'Roboto Mono', monospace;
+}
+
+.lobby-strip {
+  display: flex;
+  align-items: center;
+  min-height: 54px;
+  padding: 0.3rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(6, 8, 14, 0.76);
+}
+
+.lobby-home {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  transition: color 180ms ease;
+}
+
+.lobby-home:hover,
+.lobby-home:focus-visible {
+  color: rgba(255, 204, 102, 0.96);
+}
+
+.lobby-floor {
+  width: min(100%, 960px);
+  margin: 0 auto;
+  padding: clamp(2.5rem, 8vw, 5.5rem) 16px 4rem;
+}
+
+.lobby-title {
+  margin: 0;
+  font-family: 'Roboto Slab', serif;
+  font-size: clamp(2.4rem, 8vw, 4.75rem);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+}
+
+.lobby-intro {
+  margin: 1rem 0 0;
+  color: rgba(255, 204, 102, 0.88);
+  font-size: 0.86rem;
+  letter-spacing: 0.08em;
+}
+
+.cabinets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 16px;
+  margin: clamp(2rem, 6vw, 3.5rem) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cabinet-link,
+.cabinet-empty {
+  display: grid;
+  align-content: start;
+  gap: 0.6rem;
+  height: 100%;
+  min-height: 200px;
+  padding: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(5, 8, 14, 0.44);
+}
+
+.cabinet-link {
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 180ms ease, transform 180ms ease;
+}
+
+.cabinet-link:hover,
+.cabinet-link:focus-visible {
+  border-color: rgba(255, 204, 102, 0.72);
+  transform: translateY(-2px);
+}
+
+.cabinet-number {
+  color: rgba(255, 204, 102, 0.88);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+}
+
+.cabinet-name {
+  font-family: 'Roboto Slab', serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.cabinet-summary {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.cabinet-empty {
+  border-style: dashed;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.cabinet-empty .cabinet-number,
+.cabinet-empty .cabinet-summary {
+  color: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cabinet-link {
+    transition: none;
+  }
+
+  .cabinet-link:hover,
+  .cabinet-link:focus-visible {
+    transform: none;
+  }
+}
