@@ -1,0 +1,833 @@
+/*
+ * The lobby shows one game at a time as a cartridge in a paper handheld. The pitch on
+ * the left and the device on the right share one grid; on a phone they stack, with the
+ * device between the title and the copy.
+ */
+body.lobby {
+  --ground: #f4f4f2;
+  --rule: #dededa;
+  --muted: #6b6b6b;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 100dvh;
+  background: var(--ground);
+}
+
+.site-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 64px;
+  padding: 0 56px;
+}
+
+.wordmark {
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 650;
+  font-stretch: 115%;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+}
+
+.site-nav {
+  display: flex;
+  gap: 28px;
+}
+
+.site-nav a {
+  color: var(--ink-dim);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.site-nav a:hover,
+.site-nav a:focus-visible {
+  color: var(--ink);
+}
+
+.floor {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  grid-template-areas:
+    'tags   device'
+    'title  device'
+    'copy   device'
+    'meta   device'
+    'start  device'
+    'lineup device';
+  grid-template-rows: repeat(5, auto) 1fr;
+  align-content: center;
+  column-gap: 48px;
+  min-height: calc(100dvh - 64px);
+  padding: 0 56px 32px;
+}
+
+/* Pitch */
+.pitch-tags {
+  grid-area: tags;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 20px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.status {
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--crema);
+}
+
+.status.is-dev {
+  background: #e2e2de;
+}
+
+.pitch-title {
+  grid-area: title;
+  margin: 0;
+  font-size: clamp(64px, 9vw, 120px);
+  font-weight: 640;
+  font-stretch: 125%;
+  letter-spacing: -0.05em;
+  line-height: 0.85;
+}
+
+.pitch-copy {
+  grid-area: copy;
+  max-width: 420px;
+  margin: 20px 0 0;
+  color: var(--ink-dim);
+  font-size: 19px;
+  line-height: 1.45;
+}
+
+.pitch-meta {
+  grid-area: meta;
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.start {
+  grid-area: start;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  height: 58px;
+  margin-top: 24px;
+  padding: 0 12px 0 24px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 18px;
+  font-weight: 650;
+  text-decoration: none;
+  transition: transform 160ms var(--ease), background-color 160ms ease;
+}
+
+.start:hover {
+  transform: translateY(-1px);
+}
+
+.start[aria-disabled='true'] {
+  background: #9a9a96;
+  cursor: default;
+  transform: none;
+}
+
+.start[aria-disabled='true'] .start-dot,
+.start[aria-disabled='true'] .start-key {
+  display: none;
+}
+
+.start-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--crema);
+}
+
+.start-key {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(250, 250, 250, 0.14);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+/* Lineup: its own scroll box, so the page stays one screen as cartridges are added. */
+.lineup {
+  grid-area: lineup;
+  margin-top: 40px;
+  min-height: 0;
+}
+
+.lineup-head {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--ink);
+  color: var(--ink-dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.lineup-list {
+  display: grid;
+  gap: 6px;
+  max-height: 284px;
+  margin: 0;
+  padding: 6px 0 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  list-style: none;
+}
+
+.cart-row {
+  display: grid;
+  grid-template-columns: 40px 64px minmax(0, 1fr) auto;
+  align-items: center;
+  width: 100%;
+  height: 64px;
+  padding: 0 14px 0 12px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+button.cart-row:hover {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.cart-row[aria-pressed='true'] {
+  border-color: var(--rule);
+  background: var(--card);
+}
+
+.cart-row.is-dev {
+  color: var(--muted);
+}
+
+.cart-row.is-open {
+  grid-template-columns: 40px 64px minmax(0, 1fr);
+  border: 1px dashed #c4c4c0;
+  color: #9a9a96;
+  cursor: default;
+}
+
+.cart-icon {
+  display: block;
+  width: 24px;
+  height: 34px;
+  padding: 3px;
+  border: 1.5px solid currentColor;
+  border-radius: 5px 5px 9px 5px;
+  background: var(--card);
+}
+
+.cart-icon span {
+  display: block;
+  height: 13px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.cart-row.is-dev .cart-icon span {
+  opacity: 0.35;
+}
+
+.cart-row.is-open .cart-icon {
+  border-style: dashed;
+  background: transparent;
+}
+
+.cart-model {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.cart-name {
+  font-size: 20px;
+  font-weight: 600;
+  font-stretch: 115%;
+}
+
+.cart-chip {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--crema);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.cart-row.is-dev .cart-chip {
+  border: 1px solid #c4c4c0;
+  background: transparent;
+}
+
+/* Device */
+.device-stage {
+  grid-area: device;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 40px;
+}
+
+.device {
+  position: relative;
+  width: 410px;
+  height: 680px;
+}
+
+.cartridge {
+  position: absolute;
+  top: -40px;
+  left: 44px;
+  width: 322px;
+  height: 64px;
+  overflow: hidden;
+  border: 1px solid #d3d3ce;
+  border-radius: 8px 8px 0 0;
+  background: #e6e6e1;
+  transition: transform 200ms var(--ease);
+}
+
+.cartridge.is-out {
+  transform: translateY(-34px);
+  transition-duration: 140ms;
+}
+
+.cartridge-grip {
+  display: block;
+  height: 10px;
+  background-image: repeating-linear-gradient(90deg, #d3d3ce 0, #d3d3ce 2px, transparent 2px, transparent 7px);
+}
+
+.cartridge-label {
+  display: block;
+  margin: 5px 24px 0;
+  padding: 3px 0;
+  border-radius: 3px;
+  background: var(--crema);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.device[data-power='off'] .cartridge-label {
+  background: var(--ground);
+}
+
+.volume {
+  position: absolute;
+  top: 150px;
+  right: -7px;
+  width: 9px;
+  height: 64px;
+  border-radius: 0 4px 4px 0;
+  background-color: #d9d9d4;
+  background-image: repeating-linear-gradient(0deg, #c4c4bf 0, #c4c4bf 2px, transparent 2px, transparent 5px);
+}
+
+.volume-label {
+  position: absolute;
+  top: 222px;
+  right: 2px;
+  color: #9a9a96;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+}
+
+.device-body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+  padding: 26px 26px 28px;
+  border: 1px solid var(--rule);
+  border-radius: 30px 30px 96px 30px;
+  background: var(--card);
+  box-shadow:
+    inset 0 2px 0 #ffffff,
+    inset 0 -6px 0 #f1f1ee,
+    0 2px 4px rgba(0, 0, 0, 0.04),
+    0 44px 80px -40px rgba(0, 0, 0, 0.38);
+}
+
+.device-top {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  padding: 0 6px;
+  color: #a5a5a0;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.bezel {
+  padding: 14px 18px 18px;
+  border-radius: 14px 14px 46px 14px;
+  background: #2a2a2d;
+}
+
+.bezel-stripe {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+  color: #b7b7b2;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.stripe-crema {
+  flex-grow: 1;
+  height: 2px;
+  background: var(--crema);
+}
+
+.stripe-grey {
+  width: 34px;
+  height: 2px;
+  background: #6b6b6e;
+}
+
+.bezel-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.power {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 30px;
+  margin: 0;
+  color: #8a8a8d;
+  font-family: var(--font-mono);
+  font-size: 7px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.led {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff7a45;
+  /* Steady, like a real power light. A blink inside the zoomed handheld restyled the page every frame. */
+  box-shadow: 0 0 8px #ff7a45;
+}
+
+.device[data-power='off'] .led {
+  background: #5a5a5d;
+  box-shadow: none;
+}
+
+.screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  height: 236px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+.screen-hud {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-dim);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.screen-canvas {
+  display: block;
+  flex-grow: 1;
+  width: 100%;
+  min-height: 0;
+}
+
+.screen-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+  background: #3a3a3d;
+  color: #a5a5a0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.screen-empty[hidden] {
+  display: none;
+}
+
+.screen-empty small {
+  color: #7a7a7d;
+  font-size: 9px;
+}
+
+.device-logo {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  padding-left: 4px;
+  font-size: 22px;
+  font-weight: 750;
+  font-stretch: 125%;
+  letter-spacing: -0.03em;
+}
+
+.device-logo span {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.controls {
+  position: relative;
+  height: 128px;
+}
+
+.dpad {
+  position: absolute;
+  top: 18px;
+  left: 14px;
+  width: 96px;
+  height: 96px;
+}
+
+.dpad-h,
+.dpad-v {
+  position: absolute;
+  border-radius: 6px;
+  background: #1d1d1f;
+  box-shadow: 0 3px 0 #000000;
+}
+
+.dpad-h {
+  top: 33px;
+  left: 0;
+  width: 96px;
+  height: 30px;
+}
+
+.dpad-v {
+  top: 0;
+  left: 33px;
+  width: 30px;
+  height: 96px;
+}
+
+.dpad-dimple {
+  position: absolute;
+  top: 38px;
+  left: 38px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #2c2c2f;
+}
+
+.dpad-arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 5px solid transparent;
+}
+
+.dpad-arrow.is-up {
+  top: 2px;
+  left: 43px;
+  border-bottom: 7px solid #3e3e42;
+}
+
+.dpad-arrow.is-down {
+  bottom: 2px;
+  left: 43px;
+  border-top: 7px solid #3e3e42;
+}
+
+.dpad-arrow.is-left {
+  top: 43px;
+  left: 2px;
+  border-right: 7px solid #3e3e42;
+}
+
+.dpad-arrow.is-right {
+  top: 43px;
+  right: 2px;
+  border-left: 7px solid #3e3e42;
+}
+
+.ab {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  width: 150px;
+  height: 104px;
+  transform: rotate(-24deg);
+}
+
+.ab-well {
+  position: absolute;
+  top: 44px;
+  left: 0;
+  width: 104px;
+  height: 60px;
+  border-radius: 30px;
+  background: #ececea;
+}
+
+.ab-button {
+  position: absolute;
+  top: 48px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+}
+
+.ab-button.is-b {
+  left: 4px;
+  background: #1d1d1f;
+  box-shadow: 0 3px 0 #000000;
+}
+
+.ab-button.is-a {
+  left: 48px;
+  background: var(--crema);
+  box-shadow: 0 3px 0 var(--crema-deep);
+}
+
+.ab-label {
+  position: absolute;
+  top: 104px;
+  color: #8a8a86;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.ab-label.is-b {
+  left: 24px;
+}
+
+.ab-label.is-a {
+  left: 68px;
+}
+
+.controls-low {
+  position: relative;
+  flex-grow: 1;
+}
+
+.pills {
+  position: absolute;
+  top: 4px;
+  left: 92px;
+  display: flex;
+  gap: 22px;
+  transform: rotate(-24deg);
+}
+
+.pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: #8a8a86;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.pill span {
+  width: 46px;
+  height: 12px;
+  border-radius: 999px;
+  background: #c9c9c4;
+  box-shadow: 0 2px 0 #a9a9a4;
+}
+
+.grille {
+  position: absolute;
+  top: 6px;
+  right: 22px;
+  display: flex;
+  gap: 9px;
+  transform: rotate(-30deg);
+}
+
+.grille span {
+  width: 7px;
+  height: 54px;
+  border-radius: 4px;
+  background: #e2e2de;
+  box-shadow: inset 0 2px 2px rgba(0, 0, 0, 0.12);
+}
+
+.phones {
+  position: absolute;
+  bottom: 0;
+  left: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #a5a5a0;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.phones span {
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid #c4c4c0;
+  border-radius: 50%;
+}
+
+/* The device keeps its proportions and shrinks as a whole on shorter or narrower screens. */
+@media (max-height: 880px), (max-width: 1180px) {
+  .device {
+    zoom: 0.86;
+  }
+}
+
+@media (max-height: 780px) {
+  .device {
+    zoom: 0.74;
+  }
+}
+
+@media (max-height: 680px) {
+  .device {
+    zoom: 0.64;
+  }
+}
+
+@media (max-width: 860px) {
+  .site-bar {
+    height: 52px;
+    padding: 0 16px;
+  }
+
+  .site-nav {
+    gap: 16px;
+  }
+
+  .site-nav a:first-child {
+    display: none;
+  }
+
+  .floor {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'tags'
+      'title'
+      'device'
+      'copy'
+      'meta'
+      'start'
+      'lineup';
+    grid-template-rows: none;
+    align-content: start;
+    min-height: 0;
+    padding: 8px 16px 32px;
+  }
+
+  .pitch-tags {
+    margin-bottom: 12px;
+  }
+
+  .device-stage {
+    padding: 44px 0 8px;
+  }
+
+  .device {
+    zoom: 0.52;
+  }
+
+  .pitch-copy {
+    margin-top: 12px;
+    font-size: 16px;
+  }
+
+  .start {
+    justify-self: stretch;
+    justify-content: center;
+    padding: 0 24px;
+  }
+
+  .start-key {
+    display: none;
+  }
+
+  .lineup {
+    margin-top: 28px;
+  }
+
+  .lineup-list {
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .start,
+  .cartridge {
+    transition: none;
+  }
+}

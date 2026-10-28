@@ -1,0 +1,47 @@
+/* The paper, ink and crema every arcade page shares, taken from the lucasflatwhite.com board. */
+:root {
+  color-scheme: light;
+  --paper: #fafafa;
+  --card: #ffffff;
+  --ink: #171717;
+  --ink-dim: #4d4d4d;
+  --line: #ebebeb;
+  --crema: #ffc457;
+  --crema-deep: #c98a1c;
+  --radius: 6px;
+  --radius-card: 14px;
+  --font-display: 'Anybody Variable', 'Noto Sans KR Variable', system-ui, sans-serif;
+  --font-mono: 'Roboto Mono', ui-monospace, monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-display);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
