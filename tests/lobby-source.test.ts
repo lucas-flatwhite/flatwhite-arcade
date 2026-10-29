@@ -15,7 +15,7 @@ describe('lobby', () => {
   it('links every playable cartridge by its full /arcade/ path', () => {
     const hrefs = [...lobby.matchAll(/data-href="([^"]+)"/g)].map((match) => match[1]);
 
-    expect(hrefs).toEqual(['/arcade/snake/']);
+    expect(hrefs).toEqual(['/arcade/snake/', '/arcade/suika/']);
   });
 
   it('lists the lineup under Start, in a box that scrolls on its own as it grows', () => {
@@ -27,7 +27,7 @@ describe('lobby', () => {
     expect(lobby).toContain('role="img" aria-label="A handheld playing a live demo of Snake"');
   });
 
-  it('builds every page it links to', () => {
+  it('builds the lobby and Snake locally while Suika is served independently', () => {
     expect(vite).toContain("base: '/arcade/'");
     expect(vite).toContain("outDir: 'dist/arcade'");
     expect(vite).toContain("'snake/index.html'");

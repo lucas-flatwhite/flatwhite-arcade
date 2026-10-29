@@ -42,7 +42,10 @@ function mountLobby(): void {
   const cartridge = query<HTMLElement>('[data-cartridge]');
   const cartridgeLabel = query<HTMLElement>('[data-cartridge-label]');
   const screenEmpty = query<HTMLElement>('[data-screen-empty]');
-  const attract = mountAttract(query<HTMLCanvasElement>('[data-screen-canvas]'), {
+  const screenCanvas = query<HTMLCanvasElement>('[data-screen-canvas]');
+  const screenHud = query<HTMLElement>('[data-screen-hud]');
+  const suikaPreview = query<HTMLElement>('[data-screen-preview="suika"]');
+  const attract = mountAttract(screenCanvas, {
     left: query<HTMLElement>('[data-hud-left]'),
     right: query<HTMLElement>('[data-hud-right]'),
   });
@@ -63,6 +66,7 @@ function mountLobby(): void {
     selected = index;
     const href = row.dataset.href;
     const playable = Boolean(href);
+    const snakeDemo = playable && row.dataset.preview === 'snake';
 
     rows.forEach((other, otherIndex) => other.setAttribute('aria-pressed', String(otherIndex === index)));
     pitch.model.textContent = row.dataset.model ?? '';
@@ -85,11 +89,16 @@ function mountLobby(): void {
     device.dataset.power = playable ? 'on' : 'off';
     device.setAttribute(
       'aria-label',
-      playable ? `A handheld playing a live demo of ${row.dataset.title}` : 'A handheld with an empty cartridge slot',
+      playable
+        ? `A handheld ${snakeDemo ? 'playing a live demo' : 'showing a preview'} of ${row.dataset.title}`
+        : 'A handheld with an empty cartridge slot',
     );
     deviceModel.textContent = `${row.dataset.model} · Made in paper`;
     screenEmpty.hidden = playable;
-    attract.setPower(playable);
+    screenCanvas.hidden = !snakeDemo;
+    screenHud.hidden = !snakeDemo;
+    suikaPreview.hidden = !playable || row.dataset.preview !== 'suika';
+    attract.setPower(snakeDemo);
 
     window.clearTimeout(swap);
     cartridge.classList.add('is-out');

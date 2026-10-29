@@ -203,8 +203,8 @@ body.lobby {
   grid-template-columns: 40px 64px minmax(0, 1fr) auto;
   align-items: center;
   width: 100%;
-  height: 64px;
-  padding: 0 14px 0 12px;
+  min-height: 64px;
+  padding: 10px 14px 10px 12px;
   border: 1px solid transparent;
   border-radius: 12px;
   background: transparent;
@@ -507,8 +507,50 @@ button.cart-row:hover {
   text-transform: uppercase;
 }
 
+.screen-canvas[hidden],
+.screen-hud[hidden],
+.screen-preview[hidden],
 .screen-empty[hidden] {
   display: none;
+}
+
+.screen-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 10px;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  text-align: center;
+}
+
+.screen-preview p {
+  margin: 0;
+  font-size: 12px;
+}
+
+.screen-preview svg {
+  width: 100%;
+  min-height: 0;
+  flex: 1;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+.screen-preview .preview-accent {
+  fill: var(--crema);
+}
+
+.screen-preview .preview-guide {
+  stroke-dasharray: 4 5;
+  opacity: 0.5;
+}
+
+.screen-preview small {
+  font-size: 9px;
+  letter-spacing: 0.08em;
 }
 
 .screen-empty small {
