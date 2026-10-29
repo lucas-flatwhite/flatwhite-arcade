@@ -366,6 +366,11 @@ export function mountSnake(): void {
       return;
     }
 
+    // A focused navigation link keeps native keyboard activation in every phase.
+    if (event.target instanceof Element && event.target.closest('a[href]')) {
+      return;
+    }
+
     // A focused button answers Enter and Space itself.
     if (event.target instanceof HTMLButtonElement && (event.key === 'Enter' || event.key === ' ')) {
       return;
