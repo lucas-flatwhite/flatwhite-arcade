@@ -3,14 +3,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Small games from lucasflatwhite.com, one cartridge at a time. Starting with Snake." />
+    <meta name="description" content="Small games from lucasflatwhite.com, one cartridge at a time. Play Snake or Beach Ball Merge." />
     <meta name="theme-color" content="#f4f4f2" />
     <link rel="canonical" href="https://lucasflatwhite.com/arcade/" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Flatwhite Arcade" />
-    <meta property="og:description" content="Small games from lucasflatwhite.com, one cartridge at a time. Starting with Snake." />
+    <meta property="og:description" content="Small games from lucasflatwhite.com, one cartridge at a time. Play Snake or Beach Ball Merge." />
     <meta property="og:url" content="https://lucasflatwhite.com/arcade/" />
     <meta property="og:image" content="https://lucasflatwhite.com/arcade/og-image.png" />
     <meta property="og:image:width" content="1200" />
@@ -63,6 +63,7 @@
               data-description="A paper board, a rival who wants the same beans, and an espresso when you need it."
               data-meta="1P vs CPU · Arrows, WASD, swipe"
               data-href="/arcade/snake/"
+              data-preview="snake"
               data-label="FA-01 · Snake"
               data-best
             >
@@ -74,21 +75,23 @@
           </li>
           <li>
             <button
-              class="cart-row is-dev"
+              class="cart-row"
               type="button"
               aria-pressed="false"
               data-cart
               data-model="FA-02"
-              data-status="In development"
-              data-title="Untitled"
-              data-description="The next cartridge is still on the workbench. It will slot in here when it is ready."
-              data-meta="TBA"
-              data-label="Empty slot"
+              data-status="Available"
+              data-title="Beach Ball Merge"
+              data-description="Drop sports balls, merge matching pairs, and make a beach ball. A little physics, a lot of bounce."
+              data-meta="1P or local 2P · Mouse, touch, arrows + Space"
+              data-href="/arcade/suika/"
+              data-preview="suika"
+              data-label="FA-02 · Beach Ball Merge"
             >
               <span class="cart-icon" aria-hidden="true"><span></span></span>
               <span class="cart-model">FA-02</span>
-              <span class="cart-name">Untitled</span>
-              <span class="cart-chip">In dev</span>
+              <span class="cart-name">Beach Ball Merge</span>
+              <span class="cart-chip">Play</span>
             </button>
           </li>
           <li class="cart-row is-open">
@@ -116,9 +119,26 @@
               <div class="bezel-row">
                 <p class="power"><span class="led"></span>Power</p>
                 <div class="screen">
-                  <p class="screen-hud"><span data-hud-left>Len 03</span><span data-hud-right>CPU 03</span></p>
+                  <p class="screen-hud" data-screen-hud><span data-hud-left>Len 03</span><span data-hud-right>CPU 03</span></p>
                   <canvas class="screen-canvas" data-screen-canvas></canvas>
-                  <p class="screen-empty" data-screen-empty hidden>No cartridge<small>FA-02 is still in the workshop</small></p>
+                  <div class="screen-preview" data-screen-preview="suika" hidden aria-hidden="true">
+                    <p>Beach Ball Merge</p>
+                    <svg viewBox="0 0 260 170" fill="none">
+                      <path d="M34 43V135Q34 154 53 154H207Q226 154 226 135V43" />
+                      <path class="preview-guide" d="M34 53H226M104 12V36" />
+                      <circle cx="104" cy="24" r="10" />
+                      <circle cx="61" cy="136" r="15" />
+                      <circle class="preview-accent" cx="103" cy="127" r="25" />
+                      <path d="M78 127H128M103 102V152M85 110Q116 127 85 144M121 110Q90 127 121 144" />
+                      <circle cx="170" cy="119" r="33" />
+                      <path class="preview-accent" d="M170 86Q136 119 170 152Q204 119 170 86Z" />
+                      <circle cx="141" cy="69" r="14" />
+                      <path d="M131 59Q151 69 131 79" />
+                      <circle cx="203" cy="76" r="10" />
+                    </svg>
+                    <small>Drop · Merge · Repeat</small>
+                  </div>
+                  <p class="screen-empty" data-screen-empty hidden>No cartridge<small>More games are on the workbench</small></p>
                 </div>
               </div>
             </div>

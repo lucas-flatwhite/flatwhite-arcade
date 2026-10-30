@@ -23,7 +23,7 @@ describe('snake page', () => {
 
   it('gives touch players a pause button and a way back to the lobby', () => {
     expect(page).toContain('<button class="game-pause" type="button" data-pause');
-    expect(page).toContain('<a class="game-back" href="https://lucasflatwhite.com/arcade/">Arcade</a>');
+    expect(page).toContain('<a class="game-back" href="https://www.lucasflatwhite.com/arcade/">Arcade</a>');
   });
 
   it('keeps the board still under a finger and the page from scrolling', () => {

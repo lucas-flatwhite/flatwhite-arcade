@@ -5,6 +5,7 @@ Small games from [lucasflatwhite.com](https://lucasflatwhite.com), served at [lu
 | Cabinet | Path | What it is |
 |---|---|---|
 | 01 Snake | `/arcade/snake/` | Snake on a paper board. Race a CPU rival to the beans, drink espresso for a combo, chill the rival with cold brew, and trap it with your own body for a KO. |
+| 02 Beach Ball Merge | `/arcade/suika/` | Drop and merge sports balls in a beach-themed physics puzzle. Solo play or local two-player mode on one desktop. Built and deployed independently in [suika-balls](https://github.com/lucas-flatwhite/suika-balls). |
 
 ## Run it
 
@@ -23,11 +24,13 @@ npm run preview  # http://localhost:4173/arcade/
 - This repository deploys as its own Vercel project (`flatwhite-arcade.vercel.app`). `vercel.json` sends `/` to `/arcade/` and adds trailing slashes.
 - lucasflatwhite.com rewrites `/arcade/*` to this project, the same way it serves `/ai-timeline-log/`. The homepage's arcade card links to the lobby, and the old `/play` address is gone.
 - Pages run on the same origin as the site, so the snake's best score in `localStorage` (`lucas-flatwhite:best-length`) carries over from the old `/play` page.
+- lucasflatwhite.com routes `/arcade/suika/` and its assets directly to the independent Suika deployment before applying the general Arcade rules. The lobby links to that canonical site path; no Suika source or engine is bundled into this project.
 
 ## Lobby
 
 - **Layout** (`index.html`, `src/lobby/lobby.css`): The selected game's pitch on the left (model, status, title, copy, Start) with the lineup under it, and a paper handheld on the right. On a phone they stack, with the handheld between the title and the copy. The handheld is plain HTML and CSS and shrinks as a whole with `zoom` on shorter or narrower screens.
-- **Live demo** (`src/lobby/attract.ts`): The handheld's screen plays Snake by itself with the real rules and renderer, steered by `src/lobby/autopilot.ts`. It runs only while the screen is in view, the tab is visible and the slot holds a game; with reduced motion it shows one still.
+- **Live demo** (`src/lobby/attract.ts`): The handheld's screen plays Snake by itself with the real rules and renderer, steered by `src/lobby/autopilot.ts`. It runs only while the screen is in view, the tab is visible and Snake is selected; with reduced motion it shows one still.
+- **Beach Ball Merge preview**: Selecting FA-02 shows a static inline SVG of the ball-merging puzzle, hides the Snake canvas and HUD, and stops its demo loop. Selecting FA-01 brings the live Snake demo back. The lobby does not load Godot or download the Suika engine.
 - **Lineup**: Each cartridge is a row whose `data-*` attributes carry its pitch. Choosing a row swaps the pitch and lifts the cartridge out and back in. ↑ ↓ choose, Enter starts. Start is a real link, so it works before any script runs. The list scrolls inside its own box, so the page stays one screen as games are added.
 
 ## Snake
@@ -40,7 +43,7 @@ npm run preview  # http://localhost:4173/arcade/
 
 ## Return to the lobby
 
-Every game should keep a top-level HTML link to `https://lucasflatwhite.com/arcade/`, outside its board and overlays. Snake keeps this link visible on the ready, playing, paused and result screens, with a 44px touch target and native keyboard activation. The canonical URL also works when the game is opened directly on its independent deployment.
+Every game should keep a top-level HTML link to `https://www.lucasflatwhite.com/arcade/`, outside its board and overlays. Snake keeps this link visible on the ready, playing, paused and result screens, with a 44px touch target and native keyboard activation. The canonical URL also works when the game is opened directly on its independent deployment.
 
 ## Layout
 
@@ -66,4 +69,4 @@ tests/                # Rules, effects and swipe behaviour; page and type checks
 
 1. Put the page at `<game>/index.html` and its code in `src/<game>/`.
 2. Add the page to `build.rollupOptions.input` in `vite.config.ts`.
-3. Add a `cart-row` button to the lineup in `index.html` with its `data-model`, `data-status`, `data-title`, `data-description`, `data-meta`, `data-label` and `data-href="/arcade/<game>/"`, and update the slot count.
+3. Add a `cart-row` button to the lineup in `index.html` with its `data-model`, `data-status`, `data-title`, `data-description`, `data-meta`, `data-label` and `data-href="/arcade/<game>/"`, and update the slot count. Set `data-preview="snake"` only for the Snake demo; other games need their own preview. Independently deployed games such as Suika can skip steps 1 and 2 and instead add a dedicated route in lucasflatwhite.com before its Arcade wildcard rules.
