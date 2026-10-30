@@ -43,7 +43,7 @@ npm run preview  # http://localhost:4173/arcade/
 
 ## Return to the lobby
 
-Every game should keep a top-level HTML link to `https://lucasflatwhite.com/arcade/`, outside its board and overlays. Snake keeps this link visible on the ready, playing, paused and result screens, with a 44px touch target and native keyboard activation. The canonical URL also works when the game is opened directly on its independent deployment.
+Every game should keep a top-level HTML link to `https://www.lucasflatwhite.com/arcade/`, outside its board and overlays. Snake keeps this link visible on the ready, playing, paused and result screens, with a 44px touch target and native keyboard activation. The canonical URL also works when the game is opened directly on its independent deployment.
 
 ## Layout
 
