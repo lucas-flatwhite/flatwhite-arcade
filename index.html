@@ -26,93 +26,95 @@
     <header class="site-bar">
       <a class="wordmark" href="/arcade/">Flatwhite Arcade</a>
       <nav class="site-nav" aria-label="Elsewhere">
-        <a href="https://github.com/lucas-flatwhite/flatwhite-arcade" target="_blank" rel="noreferrer">Source</a>
         <a href="https://lucasflatwhite.com/">lucasflatwhite.com</a>
       </nav>
     </header>
 
     <main class="floor" data-lobby>
-      <p class="pitch-tags">
-        <span data-pitch-model>FA-01</span>
-        <span class="status" data-pitch-status>Available</span>
-      </p>
-      <h1 class="pitch-title" data-pitch-title>Snake</h1>
-      <p class="pitch-copy" data-pitch-description>
-        A paper board, a rival who wants the same beans, and an espresso when you need it.
-      </p>
-      <p class="pitch-meta" data-pitch-meta>1P vs CPU · Arrows, WASD, swipe</p>
-
-      <a class="start" href="/arcade/snake/" data-start>
-        <span class="start-dot" aria-hidden="true"></span>
-        <span data-start-label>Start</span>
-        <kbd class="start-key">Enter</kbd>
-      </a>
-
       <section class="lineup" aria-labelledby="lineup-title">
         <h2 class="lineup-head"><span id="lineup-title">Lineup</span><span>03 slots</span></h2>
         <ol class="lineup-list">
-          <li>
+          <li class="cart">
             <button
               class="cart-row"
               type="button"
               aria-pressed="true"
               data-cart
-              data-model="FA-01"
-              data-status="Available"
               data-title="Snake"
               data-description="A paper board, a rival who wants the same beans, and an espresso when you need it."
               data-meta="1P vs CPU · Arrows, WASD, swipe"
               data-href="/arcade/snake/"
               data-preview="snake"
-              data-label="FA-01 · Snake"
               data-best
             >
               <span class="cart-icon" aria-hidden="true"><span></span></span>
-              <span class="cart-model">FA-01</span>
               <span class="cart-name">Snake</span>
-              <span class="cart-chip">Play</span>
             </button>
+            <a
+              class="cart-source"
+              href="https://github.com/lucas-flatwhite/flatwhite-arcade"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Snake source on GitHub"
+              ><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" /></svg></a
+            >
           </li>
-          <li>
+          <li class="cart">
             <button
               class="cart-row"
               type="button"
               aria-pressed="false"
               data-cart
-              data-model="FA-02"
-              data-status="Available"
               data-title="Beach Ball Merge"
               data-description="Drop sports balls, merge matching pairs, and make a beach ball. A little physics, a lot of bounce."
               data-meta="1P or local 2P · Mouse, touch, arrows + Space"
               data-href="/arcade/suika/"
               data-preview="suika"
-              data-label="FA-02 · Beach Ball Merge"
             >
               <span class="cart-icon" aria-hidden="true"><span></span></span>
-              <span class="cart-model">FA-02</span>
               <span class="cart-name">Beach Ball Merge</span>
-              <span class="cart-chip">Play</span>
             </button>
+            <a
+              class="cart-source"
+              href="https://github.com/lucas-flatwhite/suika-balls"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Beach Ball Merge source on GitHub"
+              ><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" /></svg></a
+            >
           </li>
           <li class="cart-row is-open">
             <span class="cart-icon" aria-hidden="true"></span>
-            <span class="cart-model">FA-03</span>
             <span class="cart-name">Open slot</span>
           </li>
         </ol>
       </section>
 
+      <div class="pitch">
+        <h1 class="pitch-title" data-pitch-title>Snake</h1>
+        <p class="pitch-copy" data-pitch-description>
+          A paper board, a rival who wants the same beans, and an espresso when you need it.
+        </p>
+        <p class="pitch-meta" data-pitch-meta>1P vs CPU · Arrows, WASD, swipe</p>
+
+        <a class="start" href="/arcade/snake/" data-start>
+          <span class="start-dot" aria-hidden="true"></span>
+          <span data-start-label>Start</span>
+          <kbd class="start-key">Enter</kbd>
+        </a>
+      </div>
+
       <div class="device-stage">
         <div class="device" data-device data-power="on" role="img" aria-label="A handheld playing a live demo of Snake">
           <div class="cartridge" data-cartridge>
             <span class="cartridge-grip"></span>
-            <span class="cartridge-label" data-cartridge-label>FA-01 · Snake</span>
+            <span class="cartridge-label" data-cartridge-label>Snake</span>
           </div>
           <span class="volume"></span>
           <span class="volume-label">Vol</span>
 
           <div class="device-body">
-            <p class="device-top"><span>◀ Off · On ▶</span><span data-device-model>FA-01 · Made in paper</span></p>
+            <p class="device-top"><span>◀ Off · On ▶</span><span>Made in paper</span></p>
 
             <div class="bezel">
               <p class="bezel-stripe"><span class="stripe-crema"></span>Paper matrix display<span class="stripe-grey"></span></p>
