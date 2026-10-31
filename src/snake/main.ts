@@ -1,6 +1,7 @@
 import '../shared/base.css';
 import '../shared/fonts.css';
 import '../shared/fonts-ko.css';
+import '../shared/arcade-chip.css';
 import './snake.css';
 import { effectsFor, liveEffects, type Effect } from './effects';
 import {
