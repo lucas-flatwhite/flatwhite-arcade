@@ -43,7 +43,12 @@ npm run preview  # http://localhost:4173/arcade/
 
 ## Return to the lobby
 
-Every game should keep a top-level HTML link to `https://www.lucasflatwhite.com/arcade/`, outside its board and overlays. Snake keeps this link visible on the ready, playing, paused and result screens, with a 44px touch target and native keyboard activation. The canonical URL also works when the game is opened directly on its independent deployment.
+Every game shows the same Arcade chip (`src/shared/arcade-chip.css`) in the same place: 12px from the left and 8px from the top of its screen, inside the safe area. It is a top-level HTML link to `https://www.lucasflatwhite.com/arcade/`, outside the board and its overlays, so it works on the ready, playing, paused and result screens and while a game loads or fails. The canonical URL also works when the game is opened directly on its independent deployment.
+
+- **Look**: 36px tall on a 44px touch target, white paper with an ink edge, Anybody. `← Arcade` from 480px up; below that only the arrow, read as “Back to Arcade”.
+- **No band of its own**: The chip sits in the game's first HUD row, and the game keeps its HUD out of that corner. Snake puts it in the left cell of its top bar. Beach Ball Merge floats it over the Godot canvas and starts its HUD row after it, so the canvas gets the whole viewport.
+- **One tap**: The chip leaves straight away, even mid-round; both games already keep their best score.
+- **Copies**: suika-balls copies the block between `arcade-chip:start` and `arcade-chip:end` into its `ui/web/arcade.css`. Change both together. `tests/arcade-chip.test.ts` and its `tests/test_arcade_navigation.py` check the same sizes and breakpoint.
 
 ## Layout
 
@@ -51,7 +56,7 @@ Every game should keep a top-level HTML link to `https://www.lucasflatwhite.com/
 index.html            # Lobby: pitch, lineup and the handheld
 snake/index.html      # Snake page: top bar, board, and the ready, pause and result cards
 src/
-  shared/             # Paper, ink and crema tokens; Anybody and Roboto Mono, plus Noto Sans KR for Korean pages
+  shared/             # Paper, ink and crema tokens; Anybody and Roboto Mono, plus Noto Sans KR for Korean pages; the Arcade chip
   lobby/              # Selection and keys, the live demo and its autopilot, styles
   snake/
     game.ts           # Rules: board size, steps, rival, combo, events
@@ -70,3 +75,4 @@ tests/                # Rules, effects and swipe behaviour; page and type checks
 1. Put the page at `<game>/index.html` and its code in `src/<game>/`.
 2. Add the page to `build.rollupOptions.input` in `vite.config.ts`.
 3. Add a `cart-row` button to the lineup in `index.html` with its `data-model`, `data-status`, `data-title`, `data-description`, `data-meta`, `data-label` and `data-href="/arcade/<game>/"`, and update the slot count. Set `data-preview="snake"` only for the Snake demo; other games need their own preview. Independently deployed games such as Suika can skip steps 1 and 2 and instead add a dedicated route in lucasflatwhite.com before its Arcade wildcard rules.
+4. Give the game the Arcade chip at 12px and 8px and keep its HUD out of that corner (see Return to the lobby).

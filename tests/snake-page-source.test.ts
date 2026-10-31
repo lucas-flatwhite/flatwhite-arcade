@@ -23,7 +23,15 @@ describe('snake page', () => {
 
   it('gives touch players a pause button and a way back to the lobby', () => {
     expect(page).toContain('<button class="game-pause" type="button" data-pause');
-    expect(page).toContain('<a class="game-back" href="https://www.lucasflatwhite.com/arcade/">Arcade</a>');
+    expect(page).toContain(
+      '<a class="arcade-chip" href="https://www.lucasflatwhite.com/arcade/" aria-label="Back to Arcade">',
+    );
+    expect(page).toContain('<span class="arcade-chip-label">Arcade</span>');
+  });
+
+  it('puts the Arcade chip where every game puts it', () => {
+    expect(read('src/snake/main.ts')).toContain("import '../shared/arcade-chip.css';");
+    expect(styles).toContain('8px max(12px, env(safe-area-inset-left));');
   });
 
   it('keeps the board still under a finger and the page from scrolling', () => {
