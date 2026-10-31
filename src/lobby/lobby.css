@@ -1,7 +1,8 @@
 /*
- * The lobby shows one game at a time as a cartridge in a paper handheld. The pitch on
- * the left and the device on the right share one grid; on a phone they stack, with the
- * device between the title and the copy.
+ * The lobby shows one game at a time as a cartridge in a paper handheld. The lineup sits
+ * on the far left, the pitch in the middle and the device on the right, each in its own
+ * column, so the device never moves when the pitch changes. On a phone the lineup becomes
+ * a strip at the top, with the device under it and the pitch below.
  */
 body.lobby {
   --ground: #f4f4f2;
@@ -49,48 +50,28 @@ body.lobby {
 
 .floor {
   display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
-  grid-template-areas:
-    'tags   device'
-    'title  device'
-    'copy   device'
-    'meta   device'
-    'start  device'
-    'lineup device';
-  grid-template-rows: repeat(5, auto) 1fr;
-  align-content: center;
+  grid-template-columns: 248px minmax(0, 1fr) auto;
+  grid-template-areas: 'lineup pitch device';
+  align-items: center;
   column-gap: 48px;
   min-height: calc(100dvh - 64px);
   padding: 0 56px 32px;
 }
 
-/* Pitch */
-.pitch-tags {
-  grid-area: tags;
+/* Pitch: the title keeps room for two lines and the copy for three, so Start stays put. */
+.pitch {
+  grid-area: pitch;
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 0 0 20px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.status {
-  padding: 3px 8px;
-  border-radius: 999px;
-  background: var(--crema);
-}
-
-.status.is-dev {
-  background: #e2e2de;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .pitch-title {
-  grid-area: title;
+  display: flex;
+  align-items: flex-end;
+  min-height: 1.7em;
   margin: 0;
-  font-size: clamp(64px, 9vw, 120px);
+  font-size: clamp(52px, 4.6vw, 80px);
   font-weight: 640;
   font-stretch: 125%;
   letter-spacing: -0.05em;
@@ -98,8 +79,8 @@ body.lobby {
 }
 
 .pitch-copy {
-  grid-area: copy;
   max-width: 420px;
+  min-height: 4.35em;
   margin: 20px 0 0;
   color: var(--ink-dim);
   font-size: 19px;
@@ -107,7 +88,6 @@ body.lobby {
 }
 
 .pitch-meta {
-  grid-area: meta;
   margin: 14px 0 0;
   color: var(--muted);
   font-family: var(--font-mono);
@@ -117,8 +97,6 @@ body.lobby {
 }
 
 .start {
-  grid-area: start;
-  justify-self: start;
   display: inline-flex;
   align-items: center;
   gap: 16px;
@@ -169,7 +147,6 @@ body.lobby {
 /* Lineup: its own scroll box, so the page stays one screen as cartridges are added. */
 .lineup {
   grid-area: lineup;
-  margin-top: 40px;
   min-height: 0;
 }
 
@@ -190,7 +167,7 @@ body.lobby {
 .lineup-list {
   display: grid;
   gap: 6px;
-  max-height: 284px;
+  max-height: min(420px, calc(100dvh - 200px));
   margin: 0;
   padding: 6px 0 0;
   overflow-y: auto;
@@ -198,13 +175,18 @@ body.lobby {
   list-style: none;
 }
 
+/* The source link sits over the row's right end, beside the button rather than inside it. */
+.cart {
+  position: relative;
+}
+
 .cart-row {
   display: grid;
-  grid-template-columns: 40px 64px minmax(0, 1fr) auto;
+  grid-template-columns: 40px minmax(0, 1fr);
   align-items: center;
   width: 100%;
   min-height: 64px;
-  padding: 10px 14px 10px 12px;
+  padding: 10px 56px 10px 12px;
   border: 1px solid transparent;
   border-radius: 12px;
   background: transparent;
@@ -223,12 +205,8 @@ button.cart-row:hover {
   background: var(--card);
 }
 
-.cart-row.is-dev {
-  color: var(--muted);
-}
-
 .cart-row.is-open {
-  grid-template-columns: 40px 64px minmax(0, 1fr);
+  padding-right: 14px;
   border: 1px dashed #c4c4c0;
   color: #9a9a96;
   cursor: default;
@@ -251,43 +229,47 @@ button.cart-row:hover {
   background: currentColor;
 }
 
-.cart-row.is-dev .cart-icon span {
-  opacity: 0.35;
-}
-
 .cart-row.is-open .cart-icon {
   border-style: dashed;
   background: transparent;
 }
 
-.cart-model {
-  font-family: var(--font-mono);
-  font-size: 12px;
-}
-
 .cart-name {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   font-stretch: 115%;
+  line-height: 1.15;
 }
 
-.cart-chip {
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: var(--crema);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  text-transform: uppercase;
+.cart-source {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: var(--muted);
+  transform: translateY(-50%);
 }
 
-.cart-row.is-dev .cart-chip {
-  border: 1px solid #c4c4c0;
-  background: transparent;
+.cart-source:hover,
+.cart-source:focus-visible {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--ink);
+}
+
+.cart-source svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
 }
 
 /* Device */
 .device-stage {
   grid-area: device;
+  align-self: stretch;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -667,7 +649,7 @@ button.cart-row:hover {
   position: absolute;
   top: 44px;
   left: 0;
-  width: 104px;
+  width: 120px;
   height: 60px;
   border-radius: 30px;
   background: #ececea;
@@ -675,38 +657,40 @@ button.cart-row:hover {
 
 .ab-button {
   position: absolute;
-  top: 48px;
-  width: 52px;
-  height: 52px;
+  top: 50px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
 }
 
 .ab-button.is-b {
-  left: 4px;
+  left: 6px;
   background: #1d1d1f;
   box-shadow: 0 3px 0 #000000;
 }
 
 .ab-button.is-a {
-  left: 48px;
+  left: 66px;
   background: var(--crema);
   box-shadow: 0 3px 0 var(--crema-deep);
 }
 
 .ab-label {
   position: absolute;
-  top: 104px;
+  top: 106px;
+  width: 48px;
   color: #8a8a86;
   font-family: var(--font-mono);
   font-size: 11px;
+  text-align: center;
 }
 
 .ab-label.is-b {
-  left: 24px;
+  left: 6px;
 }
 
 .ab-label.is-a {
-  left: 68px;
+  left: 66px;
 }
 
 .controls-low {
@@ -800,70 +784,113 @@ button.cart-row:hover {
   }
 }
 
+/* Between phone and desktop the lineup stacks over the pitch, and the device keeps its own column. */
+@media (max-width: 1280px) {
+  .site-bar {
+    padding: 0 40px;
+  }
+
+  .floor {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'lineup device'
+      'pitch  device';
+    row-gap: 40px;
+    column-gap: 40px;
+    padding: 0 40px 32px;
+  }
+
+  .lineup {
+    align-self: end;
+    max-width: 420px;
+  }
+
+  .lineup-list {
+    max-height: 212px;
+  }
+
+  .pitch {
+    align-self: start;
+  }
+
+  .pitch-title {
+    font-size: clamp(48px, 6vw, 72px);
+  }
+}
+
 @media (max-width: 860px) {
   .site-bar {
     height: 52px;
     padding: 0 16px;
   }
 
-  .site-nav {
-    gap: 16px;
-  }
-
-  .site-nav a:first-child {
-    display: none;
-  }
-
   .floor {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
-      'tags'
-      'title'
+      'lineup'
       'device'
-      'copy'
-      'meta'
-      'start'
-      'lineup';
-    grid-template-rows: none;
+      'pitch';
     align-content: start;
+    row-gap: 0;
     min-height: 0;
     padding: 8px 16px 32px;
   }
 
-  .pitch-tags {
-    margin-bottom: 12px;
+  .lineup {
+    max-width: none;
+  }
+
+  /* A strip that scrolls sideways, so every cartridge stays one swipe away above the device. */
+  .lineup-list {
+    grid-auto-flow: column;
+    grid-auto-columns: 216px;
+    max-height: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+
+  .cart-row {
+    padding-right: 50px;
+  }
+
+  .cart-name {
+    font-size: 16px;
+  }
+
+  .cart-source {
+    right: 4px;
+    width: 44px;
+    height: 44px;
   }
 
   .device-stage {
-    padding: 44px 0 8px;
+    padding: 52px 0 8px;
   }
 
   .device {
     zoom: 0.52;
   }
 
+  .pitch-title {
+    min-height: 0;
+    font-size: clamp(44px, 12vw, 64px);
+  }
+
   .pitch-copy {
+    min-height: 0;
     margin-top: 12px;
     font-size: 16px;
   }
 
   .start {
-    justify-self: stretch;
+    align-self: stretch;
     justify-content: center;
     padding: 0 24px;
   }
 
   .start-key {
     display: none;
-  }
-
-  .lineup {
-    margin-top: 28px;
-  }
-
-  .lineup-list {
-    max-height: none;
-    overflow: visible;
   }
 }
 

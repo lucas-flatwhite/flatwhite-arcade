@@ -29,8 +29,6 @@ function bestLength(): string {
 function mountLobby(): void {
   const rows = [...document.querySelectorAll<HTMLButtonElement>('[data-cart]')];
   const pitch = {
-    model: query<HTMLElement>('[data-pitch-model]'),
-    status: query<HTMLElement>('[data-pitch-status]'),
     title: query<HTMLElement>('[data-pitch-title]'),
     description: query<HTMLElement>('[data-pitch-description]'),
     meta: query<HTMLElement>('[data-pitch-meta]'),
@@ -38,7 +36,6 @@ function mountLobby(): void {
   const start = query<HTMLAnchorElement>('[data-start]');
   const startLabel = query<HTMLElement>('[data-start-label]');
   const device = query<HTMLElement>('[data-device]');
-  const deviceModel = query<HTMLElement>('[data-device-model]');
   const cartridge = query<HTMLElement>('[data-cartridge]');
   const cartridgeLabel = query<HTMLElement>('[data-cartridge-label]');
   const screenEmpty = query<HTMLElement>('[data-screen-empty]');
@@ -69,9 +66,6 @@ function mountLobby(): void {
     const snakeDemo = playable && row.dataset.preview === 'snake';
 
     rows.forEach((other, otherIndex) => other.setAttribute('aria-pressed', String(otherIndex === index)));
-    pitch.model.textContent = row.dataset.model ?? '';
-    pitch.status.textContent = row.dataset.status ?? '';
-    pitch.status.classList.toggle('is-dev', !playable);
     pitch.title.textContent = row.dataset.title ?? '';
     pitch.description.textContent = row.dataset.description ?? '';
     pitch.meta.textContent = meta(row);
@@ -93,7 +87,6 @@ function mountLobby(): void {
         ? `A handheld ${snakeDemo ? 'playing a live demo' : 'showing a preview'} of ${row.dataset.title}`
         : 'A handheld with an empty cartridge slot',
     );
-    deviceModel.textContent = `${row.dataset.model} · Made in paper`;
     screenEmpty.hidden = playable;
     screenCanvas.hidden = !snakeDemo;
     screenHud.hidden = !snakeDemo;
@@ -103,7 +96,7 @@ function mountLobby(): void {
     window.clearTimeout(swap);
     cartridge.classList.add('is-out');
     swap = window.setTimeout(() => {
-      cartridgeLabel.textContent = row.dataset.label ?? '';
+      cartridgeLabel.textContent = row.dataset.title ?? '';
       cartridge.classList.remove('is-out');
     }, SWAP_MS);
   };

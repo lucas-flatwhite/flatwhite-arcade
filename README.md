@@ -28,10 +28,10 @@ npm run preview  # http://localhost:4173/arcade/
 
 ## Lobby
 
-- **Layout** (`index.html`, `src/lobby/lobby.css`): The selected game's pitch on the left (model, status, title, copy, Start) with the lineup under it, and a paper handheld on the right. On a phone they stack, with the handheld between the title and the copy. The handheld is plain HTML and CSS and shrinks as a whole with `zoom` on shorter or narrower screens.
+- **Layout** (`index.html`, `src/lobby/lobby.css`): The lineup on the far left, the selected game's pitch (title, copy, Start) in the middle, and a paper handheld on the right, each in its own column so the handheld never moves when the pitch changes. The pitch keeps room for a two-line title and three lines of copy, so Start stays put too. Up to 1280px the lineup stacks over the pitch beside the handheld; on a phone the lineup becomes a sideways strip at the top with the handheld under it and the pitch below. The handheld is plain HTML and CSS and shrinks as a whole with `zoom` on shorter or narrower screens.
 - **Live demo** (`src/lobby/attract.ts`): The handheld's screen plays Snake by itself with the real rules and renderer, steered by `src/lobby/autopilot.ts`. It runs only while the screen is in view, the tab is visible and Snake is selected; with reduced motion it shows one still.
-- **Beach Ball Merge preview**: Selecting FA-02 shows a static inline SVG of the ball-merging puzzle, hides the Snake canvas and HUD, and stops its demo loop. Selecting FA-01 brings the live Snake demo back. The lobby does not load Godot or download the Suika engine.
-- **Lineup**: Each cartridge is a row whose `data-*` attributes carry its pitch. Choosing a row swaps the pitch and lifts the cartridge out and back in. ↑ ↓ choose, Enter starts. Start is a real link, so it works before any script runs. The list scrolls inside its own box, so the page stays one screen as games are added.
+- **Beach Ball Merge preview**: Selecting Beach Ball Merge shows a static inline SVG of the ball-merging puzzle, hides the Snake canvas and HUD, and stops its demo loop. Selecting Snake brings the live Snake demo back. The lobby does not load Godot or download the Suika engine.
+- **Lineup**: Each cartridge is a row whose `data-*` attributes carry its pitch, with a GitHub icon beside it that opens that game's own repository. Choosing a row swaps the pitch and lifts the cartridge out and back in. ↑ ↓ choose, Enter starts. Start is a real link, so it works before any script runs. The list scrolls inside its own box, so the page stays one screen as games are added.
 
 ## Snake
 
@@ -74,5 +74,5 @@ tests/                # Rules, effects and swipe behaviour; page and type checks
 
 1. Put the page at `<game>/index.html` and its code in `src/<game>/`.
 2. Add the page to `build.rollupOptions.input` in `vite.config.ts`.
-3. Add a `cart-row` button to the lineup in `index.html` with its `data-model`, `data-status`, `data-title`, `data-description`, `data-meta`, `data-label` and `data-href="/arcade/<game>/"`, and update the slot count. Set `data-preview="snake"` only for the Snake demo; other games need their own preview. Independently deployed games such as Suika can skip steps 1 and 2 and instead add a dedicated route in lucasflatwhite.com before its Arcade wildcard rules.
+3. Add a `cart` item to the lineup in `index.html`: a `cart-row` button with its `data-title`, `data-description`, `data-meta` and `data-href="/arcade/<game>/"`, and a `cart-source` link beside it to the game's repository. Update the slot count. Set `data-preview="snake"` only for the Snake demo; other games need their own preview. Independently deployed games such as Suika can skip steps 1 and 2 and instead add a dedicated route in lucasflatwhite.com before its Arcade wildcard rules.
 4. Give the game the Arcade chip at 12px and 8px and keep its HUD out of that corner (see Return to the lobby).
