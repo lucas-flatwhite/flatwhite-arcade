@@ -56,6 +56,11 @@ describe('lobby', () => {
     expect(lobby).not.toContain('data-status');
   });
 
+  it('keeps the share image copy true as games are added, naming none of them', () => {
+    expect(shareImage).toContain('<p class="line">Small games, one cartridge at a time.</p>');
+    expect(shareImage).not.toContain('class="tags"');
+  });
+
   it('describes the live demo to screen readers as one picture', () => {
     expect(lobby).toContain('role="img" aria-label="A handheld playing a live demo of Snake"');
   });
