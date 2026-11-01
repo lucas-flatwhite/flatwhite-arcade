@@ -2,7 +2,7 @@ import '../shared/base.css';
 import '../shared/fonts.css';
 import './lobby.css';
 import { mountAttract } from './attract';
-import { gameCommands, mountPalette, siteCommands } from '../shared/palette';
+import { gameCommands, homeCommand, loadSiteCommands, mountPalette } from '../shared/palette';
 
 const BEST_KEY = 'lucas-flatwhite:best-length';
 /** The cartridge rises out of the slot, the label changes, and it drops back in. */
@@ -111,7 +111,7 @@ function mountLobby(): void {
   pitch.meta.textContent = meta(rows[selected]!);
   rows.forEach((row, index) => row.addEventListener('click', () => select(index)));
 
-  mountPalette([...gameCommands(rows), ...siteCommands]);
+  mountPalette([...gameCommands(rows), homeCommand], loadSiteCommands());
 
   window.addEventListener('keydown', (event) => {
     // The command menu handles its own arrows and Enter while it is open.
