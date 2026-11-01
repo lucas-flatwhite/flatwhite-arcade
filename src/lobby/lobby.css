@@ -1,8 +1,10 @@
 /*
  * The lobby shows one game at a time as a cartridge in a paper handheld. The lineup sits
- * on the far left, the pitch in the middle and the device on the right, each in its own
- * column, so the device never moves when the pitch changes. On a phone the lineup becomes
- * a strip at the top, with the device under it and the pitch below.
+ * on the left, the pitch in the middle and the device on the right, each in its own
+ * column, so the device never moves when the pitch changes. The pitch column has a fixed
+ * width and the three columns share the leftover space evenly, inside a stage no wider
+ * than 1440px, so no gap opens up in the middle on a wide screen. On a phone the lineup
+ * becomes a strip at the top, with the device under it and the pitch below.
  */
 body.lobby {
   --ground: #f4f4f2;
@@ -11,6 +13,12 @@ body.lobby {
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   min-height: 100dvh;
   background: var(--ground);
+}
+
+.site-bar,
+.floor {
+  max-width: 1440px;
+  margin: 0 auto;
 }
 
 .site-bar {
@@ -22,6 +30,51 @@ body.lobby {
   padding: 0 56px;
 }
 
+/* Breadcrumb: the homepage's own mark, then this page, so the way up reads as a level up. */
+.crumbs ol {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.crumbs li {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.crumbs li + li::before {
+  content: '/';
+  margin: 0 12px;
+  color: #b4b4b0;
+  font-size: 18px;
+}
+
+.crumb-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink-dim);
+  font-size: 15px;
+  font-weight: 560;
+  text-decoration: none;
+}
+
+.crumb-home:hover,
+.crumb-home:focus-visible {
+  color: var(--ink);
+}
+
+.crumb-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 .wordmark {
   color: var(--ink);
   font-size: 18px;
@@ -29,29 +82,14 @@ body.lobby {
   font-stretch: 115%;
   letter-spacing: -0.02em;
   text-decoration: none;
-}
-
-.site-nav {
-  display: flex;
-  gap: 28px;
-}
-
-.site-nav a {
-  color: var(--ink-dim);
-  font-size: 14px;
-  font-weight: 500;
-  text-decoration: none;
-}
-
-.site-nav a:hover,
-.site-nav a:focus-visible {
-  color: var(--ink);
+  white-space: nowrap;
 }
 
 .floor {
   display: grid;
-  grid-template-columns: 248px minmax(0, 1fr) auto;
+  grid-template-columns: 248px minmax(0, 560px) auto;
   grid-template-areas: 'lineup pitch device';
+  justify-content: space-between;
   align-items: center;
   column-gap: 48px;
   min-height: calc(100dvh - 64px);
@@ -791,12 +829,13 @@ button.cart-row:hover {
   }
 
   .floor {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 520px) auto;
     grid-template-areas:
       'lineup device'
       'pitch  device';
+    justify-content: center;
     row-gap: 40px;
-    column-gap: 40px;
+    column-gap: clamp(40px, 8vw, 96px);
     padding: 0 40px 32px;
   }
 
@@ -824,8 +863,23 @@ button.cart-row:hover {
     padding: 0 16px;
   }
 
+  /* Only the avatar shows; the name stays for screen readers. */
+  .crumb-home span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  .crumbs li + li::before {
+    margin: 0 8px;
+  }
+
   .floor {
     grid-template-columns: minmax(0, 1fr);
+    justify-content: stretch;
     grid-template-areas:
       'lineup'
       'device'

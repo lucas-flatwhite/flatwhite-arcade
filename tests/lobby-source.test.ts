@@ -1,12 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { matches, siteCommands } from '../src/shared/palette';
 
 const read = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8');
 const lobby = read('index.html');
 const styles = read('src/lobby/lobby.css');
 const vite = read('vite.config.ts');
 const shareImage = read('scripts/og-image.html');
+const main = read('src/lobby/main.ts');
 
 describe('lobby', () => {
   it('starts the selected game from a real link, so it works before any script runs', () => {
@@ -39,6 +41,34 @@ describe('lobby', () => {
     expect(styles).toContain("grid-template-areas: 'lineup pitch device';");
     expect(styles).toMatch(/'lineup device'\s+'pitch {2}device';/);
     expect(styles).toMatch(/grid-template-areas:\s+'lineup'\s+'device'\s+'pitch';/);
+  });
+
+  it('keeps the three columns in one stage, so no gap opens in the middle of a wide screen', () => {
+    expect(styles).toMatch(/\.site-bar,\s+\.floor \{[^}]*max-width: 1440px;/);
+    expect(styles).toMatch(/\.floor \{[^}]*grid-template-columns: 248px minmax\(0, \d+px\) auto;[^}]*justify-content: space-between;/);
+  });
+
+  it('shows the way back as a breadcrumb under the homepage, not as a link off to the side', () => {
+    expect(lobby).toContain('<nav class="crumbs" aria-label="Breadcrumb">');
+    expect(lobby).toMatch(/<a class="crumb-home" href="https:\/\/www\.lucasflatwhite\.com\/">/);
+    expect(lobby).toContain('aria-current="page">Flatwhite Arcade</a>');
+    expect(lobby).not.toContain('site-nav');
+  });
+
+  it('opens the same Cmd/Ctrl+K menu as the homepage, from a button that waits for script', () => {
+    expect(lobby).toMatch(/<button\s+class="palette-trigger"[^>]*data-palette-open[^>]*hidden\s*>/);
+    expect(main).toContain('mountPalette([...gameCommands(rows), ...siteCommands]);');
+    // Arrows and Enter typed into the menu must not also move or start the lineup.
+    expect(main).toContain('event.defaultPrevented');
+  });
+
+  it('lists the homepage links in the menu and filters them by label or hint', () => {
+    expect(siteCommands.map((command) => command.id)).toEqual(['home', 'work', 'github', 'x', 'email']);
+    expect(siteCommands.every((command) => command.href.startsWith('https://') || command.href.startsWith('mailto:'))).toBe(true);
+    const email = siteCommands.find((command) => command.id === 'email')!;
+    expect(matches(email, 'GMAIL')).toBe(true);
+    expect(matches(email, 'snake')).toBe(false);
+    expect(matches(email, '  ')).toBe(true);
   });
 
   it('sets the A and B buttons side by side without overlap', () => {

@@ -24,10 +24,28 @@
   </head>
   <body class="lobby">
     <header class="site-bar">
-      <a class="wordmark" href="/arcade/">Flatwhite Arcade</a>
-      <nav class="site-nav" aria-label="Elsewhere">
-        <a href="https://lucasflatwhite.com/">lucasflatwhite.com</a>
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <ol>
+          <li>
+            <a class="crumb-home" href="https://www.lucasflatwhite.com/">
+              <img class="crumb-avatar" src="/avatar.png" alt="" width="28" height="28" />
+              <span>lucas.flatwhite</span>
+            </a>
+          </li>
+          <li><a class="wordmark" href="/arcade/" aria-current="page">Flatwhite Arcade</a></li>
+        </ol>
       </nav>
+      <button
+        class="palette-trigger"
+        type="button"
+        data-palette-open
+        aria-haspopup="dialog"
+        aria-keyshortcuts="Meta+K Control+K"
+        hidden
+      >
+        <span class="sr-only">Open command menu</span>
+        <kbd aria-hidden="true" data-palette-key>Ctrl K</kbd>
+      </button>
     </header>
 
     <main class="floor" data-lobby>

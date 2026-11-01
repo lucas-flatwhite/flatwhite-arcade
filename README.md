@@ -28,7 +28,9 @@ npm run preview  # http://localhost:4173/arcade/
 
 ## Lobby
 
-- **Layout** (`index.html`, `src/lobby/lobby.css`): The lineup on the far left, the selected game's pitch (title, copy, Start) in the middle, and a paper handheld on the right, each in its own column so the handheld never moves when the pitch changes. The pitch keeps room for a two-line title and three lines of copy, so Start stays put too. Up to 1280px the lineup stacks over the pitch beside the handheld; on a phone the lineup becomes a sideways strip at the top with the handheld under it and the pitch below. The handheld is plain HTML and CSS and shrinks as a whole with `zoom` on shorter or narrower screens.
+- **Layout** (`index.html`, `src/lobby/lobby.css`): The lineup on the left, the selected game's pitch (title, copy, Start) in the middle, and a paper handheld on the right, each in its own column so the handheld never moves when the pitch changes. The pitch column is at most 560px wide and the three columns share the leftover space evenly inside a stage no wider than 1440px, so a wide screen gets wider margins instead of an empty middle. The pitch keeps room for a two-line title and three lines of copy, so Start stays put too. Up to 1280px the lineup stacks over the pitch beside the handheld; on a phone the lineup becomes a sideways strip at the top with the handheld under it and the pitch below. The handheld is plain HTML and CSS and shrinks as a whole with `zoom` on shorter or narrower screens.
+- **Header**: A breadcrumb, `lucas.flatwhite / Flatwhite Arcade`, with the homepage's avatar and handle linking up to `https://www.lucasflatwhite.com/`. On a phone only the avatar shows.
+- **Command menu** (`src/shared/palette.ts`): Cmd/Ctrl+K, or the `⌘K` button at the top right, opens the same menu as the homepage. It lists every playable cartridge from the lineup, then the homepage, Work, GitHub, Twitter and Email (Email copies the address). Its icons are Phosphor regular paths, like the homepage's. The button stays hidden until the script runs and on touch screens, as it does on the homepage. Keep the site links in step with `src/data/links.ts` in lucasflatwhite.com.
 - **Live demo** (`src/lobby/attract.ts`): The handheld's screen plays Snake by itself with the real rules and renderer, steered by `src/lobby/autopilot.ts`. It runs only while the screen is in view, the tab is visible and Snake is selected; with reduced motion it shows one still.
 - **Beach Ball Merge preview**: Selecting Beach Ball Merge shows a static inline SVG of the ball-merging puzzle, hides the Snake canvas and HUD, and stops its demo loop. Selecting Snake brings the live Snake demo back. The lobby does not load Godot or download the Suika engine.
 - **Lineup**: Each cartridge is a row whose `data-*` attributes carry its pitch, with a GitHub icon beside it that opens that game's own repository. Choosing a row swaps the pitch and lifts the cartridge out and back in. ↑ ↓ choose, Enter starts. Start is a real link, so it works before any script runs. The list scrolls inside its own box, so the page stays one screen as games are added.
@@ -56,7 +58,7 @@ Every game shows the same Arcade chip (`src/shared/arcade-chip.css`) in the same
 index.html            # Lobby: pitch, lineup and the handheld
 snake/index.html      # Snake page: top bar, board, and the ready, pause and result cards
 src/
-  shared/             # Paper, ink and crema tokens; Anybody and Roboto Mono, plus Noto Sans KR for Korean pages; the Arcade chip
+  shared/             # Paper, ink and crema tokens; Anybody and Roboto Mono, plus Noto Sans KR for Korean pages; the Arcade chip; the Cmd/Ctrl+K menu
   lobby/              # Selection and keys, the live demo and its autopilot, styles
   snake/
     game.ts           # Rules: board size, steps, rival, combo, events
@@ -66,7 +68,7 @@ src/
     main.ts           # Loop, keys, pointer, cards, best length
     snake.css
   assets/fonts/
-public/               # Favicon and share image, served under /arcade/
+public/               # Favicon, share image and the homepage avatar, served under /arcade/
 tests/                # Rules, effects and swipe behaviour; page and type checks
 ```
 
