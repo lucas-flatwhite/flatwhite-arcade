@@ -1,0 +1,192 @@
+/* The command menu, drawn the way lucasflatwhite.com draws its own. */
+.palette-trigger {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 0.8em;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 160ms ease;
+}
+
+.palette-trigger[hidden] {
+  display: none;
+}
+
+.palette-trigger:hover {
+  background: var(--line);
+}
+
+.palette-trigger:active {
+  transform: translateY(1px);
+}
+
+/* Like the homepage, the shortcut button only shows where there is a keyboard to press it. */
+@media (hover: none), (pointer: coarse) {
+  .palette-trigger {
+    display: none;
+  }
+}
+
+.palette-trigger kbd {
+  font-family: var(--font-display);
+  font-stretch: 80%;
+  font-weight: 650;
+}
+
+.palette {
+  width: min(560px, calc(100vw - 32px));
+  max-height: min(520px, calc(100dvh - 64px));
+  margin: 12vh auto auto;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: 0 0 0 1px var(--line);
+  overflow: hidden;
+}
+
+.palette::backdrop {
+  background: rgba(23, 23, 23, 0.4);
+}
+
+.palette[open] {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .palette[open] {
+    animation: palette-in 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+@keyframes palette-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+    clip-path: inset(0 0 100% 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.palette-field {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.palette-field label {
+  flex: none;
+  font-stretch: 80%;
+  font-weight: 700;
+}
+
+.palette-field input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.2rem 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 1.05rem;
+  caret-color: var(--ink);
+}
+
+.palette-field input:focus {
+  outline: none;
+}
+
+.palette-field:focus-within {
+  box-shadow: inset 0 -2px 0 var(--ink);
+}
+
+.palette-esc {
+  flex: none;
+  color: var(--ink-dim);
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+}
+
+.palette-list {
+  margin: 0;
+  padding: 0.4rem 0;
+  list-style: none;
+  overflow-y: auto;
+}
+
+.palette-option {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.7rem 1.1rem;
+  font-size: 1.15rem;
+  cursor: pointer;
+}
+
+.palette-option[hidden] {
+  display: none;
+}
+
+.palette-icon,
+.palette-out {
+  width: 1.3rem;
+  height: 1.3rem;
+  fill: currentColor;
+}
+
+.palette-label {
+  font-weight: 600;
+  transition:
+    font-stretch 160ms ease,
+    font-weight 160ms ease;
+}
+
+.palette-hint {
+  overflow: hidden;
+  color: var(--ink-dim);
+  font-size: 0.9rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.palette-option[aria-selected='true'] {
+  background: var(--ink);
+  color: var(--card);
+}
+
+.palette-option[aria-selected='true'] .palette-hint {
+  color: var(--card);
+}
+
+.palette-option[aria-selected='true'] .palette-label {
+  font-stretch: 125%;
+  font-weight: 800;
+}
+
+.palette-empty {
+  margin: 0;
+  padding: 1rem 1.1rem 1.4rem;
+  color: var(--ink-dim);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .palette-label {
+    transition: none;
+  }
+}
