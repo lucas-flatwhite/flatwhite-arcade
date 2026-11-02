@@ -1,0 +1,67 @@
+# Development notes
+
+[Back to the overview](../README.md)
+
+File paths below are relative to the repository root.
+
+## How it is served
+
+- `public/og-image.png` is the share image for every page. Its source is `scripts/og-image.html`, drawn with the same handheld as the arcade card on lucasflatwhite.com.
+- Vite builds every page under `dist/arcade/` with `base: '/arcade/'`, so the files sit at the same paths here and on lucasflatwhite.com.
+- This repository deploys as its own Vercel project (`flatwhite-arcade.vercel.app`). `vercel.json` sends `/` to `/arcade/` and adds trailing slashes.
+- lucasflatwhite.com rewrites `/arcade/*` to this project, the same way it serves `/ai-timeline-log/`. The homepage's arcade card links to the lobby, and the old `/play` address is gone.
+- Pages run on the same origin as the site, so the snake's best score in `localStorage` (`lucas-flatwhite:best-length`) carries over from the old `/play` page.
+- lucasflatwhite.com routes `/arcade/suika/` and its assets directly to the independent Suika deployment before applying the general Arcade rules. The lobby links to that canonical site path; no Suika source or engine is bundled into this project.
+
+## Lobby
+
+- **Layout** (`index.html`, `src/lobby/lobby.css`): The lineup on the left, the selected game's pitch (title, copy, Start) in the middle, and a paper handheld on the right, each in its own column so the handheld never moves when the pitch changes. The pitch column is at most 560px wide and the three columns share the leftover space evenly inside a stage no wider than 1440px, so a wide screen gets wider margins instead of an empty middle. The pitch keeps room for a two-line title and three lines of copy, so Start stays put too. Up to 1280px the lineup stacks over the pitch beside the handheld; on a phone the lineup becomes a sideways strip at the top with the handheld under it and the pitch below. The handheld is plain HTML and CSS and shrinks as a whole with `zoom` on shorter or narrower screens.
+- **Header**: A breadcrumb, `lucas.flatwhite / Flatwhite Arcade`, with the homepage's avatar and handle linking up to `https://www.lucasflatwhite.com/`. On a phone only the avatar shows.
+- **Command menu** (`src/shared/palette.ts`): Cmd/Ctrl+K, or the `⌘K` button at the top right, opens the same menu as the homepage. Every playable cartridge from the lineup comes first, then the way home. The rest comes from the homepage's `https://www.lucasflatwhite.com/commands.json`, the list its own menu is built from, so links live only in lucasflatwhite.com and change with its deploy. The lobby fetches it on load, leaves out the homepage's Arcade entry, and accepts only `https:` and `mailto:` links. If it cannot load, the menu keeps the games and the way home. The button stays hidden until the script runs and on touch screens, as it does on the homepage.
+- **Live demo** (`src/lobby/attract.ts`): The handheld's screen plays Snake by itself with the real rules and renderer, steered by `src/lobby/autopilot.ts`. It runs only while the screen is in view, the tab is visible and Snake is selected; with reduced motion it shows one still.
+- **Beach Ball Merge preview**: Selecting Beach Ball Merge shows a static inline SVG of the ball-merging puzzle, hides the Snake canvas and HUD, and stops its demo loop. Selecting Snake brings the live Snake demo back. The lobby does not load Godot or download the Suika engine.
+- **Lineup**: Each cartridge is a row whose `data-*` attributes carry its pitch, with a GitHub icon beside it that opens that game's own repository. Choosing a row swaps the pitch and lifts the cartridge out and back in. ↑ ↓ choose, Enter starts. Start is a real link, so it works before any script runs. The list scrolls inside its own box, so the page stays one screen as games are added.
+
+## Snake
+
+- **Board**: The short side always holds 18 cells, so a phone (18×38) and a desktop (30×18) play the same game at a size a thumb can follow. A round in play keeps its cells when the field resizes, as it does when a phone's URL bar folds away.
+- **Rules** (`src/snake/game.ts`): No DOM and no clock. `step` takes the world time and returns what happened (`bean`, `special`, `drop`, `ko`, `cpu-ate`, `death`), so `tests/snake-game.test.ts` plays rounds cell by cell.
+- **Effects** (`src/snake/effects.ts`): Each event gets at most three effects, none longer than 720 ms: a crema ring, a gulp that runs down the body, a label beside the head, and a short shake on a crash. None lays out text per frame, so the cost per frame stays flat on any device. With reduced motion, rings stay still and the gulp and shake are off.
+- **Drawing** (`src/snake/render.ts`): The page, board and dot grid are painted once per resize into a layer. Each frame copies that layer and draws the pieces on top.
+- **Loop and input** (`src/snake/main.ts`): The loop sleeps whenever nothing moves: on the ready, pause and result cards. A swipe turns as soon as the finger has moved about half a cell and can chain turns without lifting (`src/snake/swipe.ts`). The round waits for the first turn, pauses with Space, Enter, P, Escape or the Pause button, and pauses itself when the tab is hidden.
+
+## Return to the lobby
+
+Every game shows the same Arcade chip (`src/shared/arcade-chip.css`) in the same place: 12px from the left and 8px from the top of its screen, inside the safe area. It is a top-level HTML link to `https://www.lucasflatwhite.com/arcade/`, outside the board and its overlays, so it works on the ready, playing, paused and result screens and while a game loads or fails. The canonical URL also works when the game is opened directly on its independent deployment.
+
+- **Look**: 36px tall on a 44px touch target, white paper with an ink edge, Anybody. `← Arcade` from 480px up; below that only the arrow, read as “Back to Arcade”.
+- **No band of its own**: The chip sits in the game's first HUD row, and the game keeps its HUD out of that corner. Snake puts it in the left cell of its top bar. Beach Ball Merge floats it over the Godot canvas and starts its HUD row after it, so the canvas gets the whole viewport.
+- **One tap**: The chip leaves straight away, even mid-round; both games already keep their best score.
+- **Copies**: suika-balls copies the block between `arcade-chip:start` and `arcade-chip:end` into its `ui/web/arcade.css`. Change both together. `tests/arcade-chip.test.ts` and its `tests/test_arcade_navigation.py` check the same sizes and breakpoint.
+
+## Layout
+
+```
+index.html            # Lobby: pitch, lineup and the handheld
+snake/index.html      # Snake page: top bar, board, and the ready, pause and result cards
+src/
+  shared/             # Paper, ink and crema tokens; Anybody and Roboto Mono, plus Noto Sans KR for Korean pages; the Arcade chip; the Cmd/Ctrl+K menu
+  lobby/              # Selection and keys, the live demo and its autopilot, styles
+  snake/
+    game.ts           # Rules: board size, steps, rival, combo, events
+    effects.ts        # Short effects that answer each event
+    render.ts         # Board layer, pieces and effects on canvas
+    swipe.ts          # Finger to turns
+    main.ts           # Loop, keys, pointer, cards, best length
+    snake.css
+  assets/fonts/
+public/               # Favicon, share image and the homepage avatar, served under /arcade/
+tests/                # Rules, effects and swipe behaviour; page and type checks
+```
+
+## Adding a cartridge
+
+1. Put the page at `<game>/index.html` and its code in `src/<game>/`.
+2. Add the page to `build.rollupOptions.input` in `vite.config.ts`.
+3. Add a `cart` item to the lineup in `index.html`: a `cart-row` button with its `data-title`, `data-description`, `data-meta` and `data-href="/arcade/<game>/"`, and a `cart-source` link beside it to the game's repository. Update the slot count. Set `data-preview="snake"` only for the Snake demo; other games need their own preview. Independently deployed games such as Suika can skip steps 1 and 2 and instead add a dedicated route in lucasflatwhite.com before its Arcade wildcard rules.
+4. Give the game the Arcade chip at 12px and 8px and keep its HUD out of that corner (see Return to the lobby).
