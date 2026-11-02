@@ -2,7 +2,7 @@
 
 English | [한국어](README.ko.md)
 
-Small games for a short break, made for the browser. Pick a cartridge and play, with a paper handheld as the lobby and a way back from every game.
+Small browser games for a short break. Pick a cartridge in the lobby to start playing, and use the Arcade link to come back.
 
 [Play at lucasflatwhite.com/arcade](https://www.lucasflatwhite.com/arcade/)
 
@@ -15,7 +15,7 @@ Small games for a short break, made for the browser. Pick a cartridge and play, 
 
 The lobby runs a live Snake demo and lets you browse with the keyboard. Both games keep your best score in the browser.
 
-This repository contains the lobby and Snake, built with TypeScript, Canvas and Vite. Beach Ball Merge has its own Godot code and deployment in [suika-balls](https://github.com/lucas-flatwhite/suika-balls). They share one arcade address, so each game can use the tools that suit it.
+This repository contains the lobby and Snake, built with TypeScript, Canvas and Vite. Beach Ball Merge has its own Godot code and deployment in [suika-balls](https://github.com/lucas-flatwhite/suika-balls). The main site serves both projects under `/arcade/`.
 
 ## Run locally
 

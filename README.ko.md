@@ -2,7 +2,7 @@
 
 [English](README.md) | 한국어
 
-잠깐 쉬어 갈 때 브라우저에서 즐길 수 있는 작은 게임들을 만듭니다. 종이로 만든 휴대용 게임기 모양의 로비에서 카트리지를 고르면 바로 시작할 수 있고, 어느 게임에서든 로비로 돌아올 수 있습니다.
+잠깐 쉬어 갈 때 즐길 수 있는 작은 브라우저 게임 모음입니다. 로비에서 카트리지를 골라 시작하고, 게임 안의 Arcade 링크로 돌아올 수 있습니다.
 
 [lucasflatwhite.com/arcade에서 플레이하기](https://www.lucasflatwhite.com/arcade/)
 
@@ -15,7 +15,7 @@
 
 로비에서는 Snake 데모가 실제로 움직이고, 키보드로 게임을 고를 수 있습니다. 두 게임 모두 최고 기록을 브라우저에 저장합니다.
 
-이 저장소에는 TypeScript, Canvas, Vite로 만든 로비와 Snake가 들어 있습니다. Beach Ball Merge는 Godot로 만들었으며, [suika-balls](https://github.com/lucas-flatwhite/suika-balls)에서 별도로 개발하고 배포합니다. 하나의 아케이드 주소로 연결하되, 게임마다 맞는 도구를 쓸 수 있도록 구성했습니다.
+이 저장소에는 TypeScript, Canvas, Vite로 만든 로비와 Snake가 들어 있습니다. Beach Ball Merge는 Godot로 만들었으며, [suika-balls](https://github.com/lucas-flatwhite/suika-balls)에서 별도로 개발하고 배포합니다. 메인 사이트에서는 두 프로젝트를 `/arcade/`에서 연결합니다.
 
 ## 로컬에서 실행하기
 
