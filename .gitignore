@@ -5,3 +5,8 @@ dist/
 
 # Superpowers docs
 docs/superpowers/
+
+# Environment files
+.env
+.env.*
+!.env.example
