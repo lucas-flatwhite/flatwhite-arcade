@@ -961,11 +961,25 @@ function draftIntervalFor(index: number): number {
 }
 
 function trySpawnSpecial(state: GameState, now: number, random: () => number): void {
-  if (state.special !== null || state.foodsEaten < state.nextSpecialAt) {
+  if (state.foodsEaten < state.nextSpecialAt) {
     return;
   }
 
   const period = cardLevel(state, 'cold-infusion') >= 2 ? 2 : rules.specialSpawnEvery;
+
+  if (state.special !== null) {
+    // If a cup was already on the board before this step, advance past missed cycles like main;
+    // if the cup was spawned on this very step (multi-bean pull), keep at most one queued cycle.
+    if (state.special.bornAt < now) {
+      while (state.foodsEaten >= state.nextSpecialAt) {
+        state.nextSpecialAt += period;
+      }
+    } else {
+      state.nextSpecialAt = Math.max(state.nextSpecialAt, state.foodsEaten - period + 1);
+    }
+    return;
+  }
+
   state.nextSpecialAt = Math.max(state.nextSpecialAt + period, state.foodsEaten + 1);
   const kind = nextSpecialKind(state);
   state.specialsSpawned += 1;

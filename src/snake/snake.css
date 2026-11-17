@@ -302,13 +302,14 @@ body.play {
   color: var(--ink);
 }
 
-@media (max-width: 600px) {
+@media (max-width: 680px) {
   .game-bar {
     grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 8px;
   }
 
   .game-score {
+    max-height: 2.5em;
     font-size: 0.72rem;
     letter-spacing: 0.02em;
     white-space: normal;
@@ -318,5 +319,22 @@ body.play {
 @media (max-width: 420px) {
   .game-bar {
     padding-inline: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .game-bar {
+    gap: 6px;
+  }
+
+  .game-score {
+    font-size: 0.65rem;
+    letter-spacing: 0;
+  }
+
+  .game-pause {
+    min-width: 60px;
+    padding: 0 10px;
+    font-size: 0.78rem;
   }
 }

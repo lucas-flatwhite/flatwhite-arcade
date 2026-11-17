@@ -548,12 +548,18 @@ describe('barista card draft and v2 mechanics', () => {
     expect(state.nextSpecialAt).toBe(7);
     expect(state.special).not.toBeNull();
 
-    // Ignoring a live special cup while eating many beans caps the backlog at 1 queued cup.
-    state.foodsEaten = 50;
-    state.special = null;
+    // Eating beans on later steps while a previous cup is still on the board advances past missed cycles like main.
+    const h3 = state.snake[0]!;
+    state.foods = [
+      { x: h3.x + 1, y: h3.y },
+      { x: h3.x + 1, y: h3.y - 1 },
+    ];
     step(state, createRandom(7), 600);
-    expect(state.specialsSpawned).toBe(3);
-    expect(state.nextSpecialAt).toBe(51);
+    expect(state.foodsEaten).toBe(7);
+    expect(state.nextSpecialAt).toBe(9);
+    state.special = null;
+    step(state, createRandom(7), 700);
+    expect(state.special).toBeNull();
   });
 
   it('reduces effective speed tier with Decaf Pace without altering bean growth', () => {
