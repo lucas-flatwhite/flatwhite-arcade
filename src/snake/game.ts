@@ -260,6 +260,7 @@ export type GameState = {
   pendingDrafts: number;
   nextSpecialAt: number;
   specialsSpawned: number;
+  specialQueued: boolean;
   shield: boolean;
   shieldBeans: number;
   stallUntil: number;
@@ -478,6 +479,7 @@ export function createGame(cols: number, rows: number, random: () => number): Ga
     pendingDrafts: 0,
     nextSpecialAt: rules.specialSpawnEvery,
     specialsSpawned: 0,
+    specialQueued: false,
     shield: false,
     shieldBeans: 0,
     stallUntil: 0,
@@ -960,27 +962,7 @@ function draftIntervalFor(index: number): number {
   return steps[Math.min(index, steps.length - 1)]!;
 }
 
-function trySpawnSpecial(state: GameState, now: number, random: () => number): void {
-  if (state.foodsEaten < state.nextSpecialAt) {
-    return;
-  }
-
-  const period = cardLevel(state, 'cold-infusion') >= 2 ? 2 : rules.specialSpawnEvery;
-
-  if (state.special !== null) {
-    // If a cup was already on the board before this step, advance past missed cycles like main;
-    // if the cup was spawned on this very step (multi-bean pull), keep at most one queued cycle.
-    if (state.special.bornAt < now) {
-      while (state.foodsEaten >= state.nextSpecialAt) {
-        state.nextSpecialAt += period;
-      }
-    } else {
-      state.nextSpecialAt = Math.max(state.nextSpecialAt, state.foodsEaten - period + 1);
-    }
-    return;
-  }
-
-  state.nextSpecialAt = Math.max(state.nextSpecialAt + period, state.foodsEaten + 1);
+function spawnSpecialCup(state: GameState, now: number, random: () => number): void {
   const kind = nextSpecialKind(state);
   state.specialsSpawned += 1;
   state.special = {
@@ -1015,7 +997,20 @@ function onBeanEaten(
     }
   }
 
-  trySpawnSpecial(state, now, random);
+  if (state.foodsEaten >= state.nextSpecialAt) {
+    const period = cardLevel(state, 'cold-infusion') >= 2 ? 2 : rules.specialSpawnEvery;
+
+    while (state.foodsEaten >= state.nextSpecialAt) {
+      state.nextSpecialAt += period;
+    }
+
+    if (!state.special) {
+      spawnSpecialCup(state, now, random);
+    } else if (state.special.bornAt === now) {
+      // A second threshold crossed on the same step as a fresh spawn queues one follow-up cup.
+      state.specialQueued = true;
+    }
+  }
 
   if (allCardsMaxed(state)) {
     state.nextDraftAt = Number.POSITIVE_INFINITY;
@@ -1227,8 +1222,9 @@ export function step(state: GameState, random: () => number, now: number): GameE
 
   applyAffogatoPull(state, nextHead, now, random, events);
 
-  if (!specialClearedThisStep) {
-    trySpawnSpecial(state, now, random);
+  if (!state.special && !specialClearedThisStep && state.specialQueued) {
+    state.specialQueued = false;
+    spawnSpecialCup(state, now, random);
   }
 
   if (state.growth > 0) {

@@ -523,9 +523,10 @@ describe('barista card draft and v2 mechanics', () => {
     expect(state.playerSlowUntil).toBe(300 + 7500);
     expect(state.cpu.slowUntil).toBe(300 + 5500);
 
-    // Eating 3 beans in one step with period 2 (foodsEaten 2 -> 5, nextSpecialAt 3) must not skip the 5th-bean special.
+    // Eating 3 beans in one step with period 2 (foodsEaten 2 -> 5, nextSpecialAt 3) queues the 5th-bean special.
     pickCard(state, 'affogato-pull', 300);
     state.special = null;
+    state.specialQueued = false;
     state.foodsEaten = 2;
     state.nextSpecialAt = 3;
     state.specialsSpawned = 0;
@@ -538,28 +539,37 @@ describe('barista card draft and v2 mechanics', () => {
     step(state, createRandom(7), 400);
     expect(state.foodsEaten).toBe(5);
     expect(state.specialsSpawned).toBe(1);
-    expect(state.nextSpecialAt).toBe(5);
-    expect(state.special).not.toBeNull();
-
-    // Once the first special is cleared, the next step immediately spawns the queued 5th-bean special.
-    state.special = null;
-    step(state, createRandom(7), 500);
-    expect(state.specialsSpawned).toBe(2);
     expect(state.nextSpecialAt).toBe(7);
+    expect(state.specialQueued).toBe(true);
     expect(state.special).not.toBeNull();
 
-    // Eating beans on later steps while a previous cup is still on the board advances past missed cycles like main.
+    // Walking normal steps while the first cup is on the board preserves the queued cup.
+    state.foods = [{ x: 0, y: 11 }];
+    step(state, createRandom(7), 500);
+    expect(state.specialQueued).toBe(true);
+    expect(state.special).not.toBeNull();
+
+    // When time passes and the first cup expires naturally, the next step spawns the queued second cup.
+    const expireAt = 400 + rules.specialDurationMs;
+    step(state, createRandom(7), expireAt);
+    expect(state.special).toBeNull();
+    expect(state.specialQueued).toBe(true);
+
+    step(state, createRandom(7), expireAt + 100);
+    expect(state.specialsSpawned).toBe(2);
+    expect(state.specialQueued).toBe(false);
+    expect(state.special).not.toBeNull();
+
+    // Eating beans on a later step while a previous cup is already on the board does not queue a cup (matches main).
     const h3 = state.snake[0]!;
     state.foods = [
       { x: h3.x + 1, y: h3.y },
       { x: h3.x + 1, y: h3.y - 1 },
     ];
-    step(state, createRandom(7), 600);
+    step(state, createRandom(7), expireAt + 200);
     expect(state.foodsEaten).toBe(7);
     expect(state.nextSpecialAt).toBe(9);
-    state.special = null;
-    step(state, createRandom(7), 700);
-    expect(state.special).toBeNull();
+    expect(state.specialQueued).toBe(false);
   });
 
   it('reduces effective speed tier with Decaf Pace without altering bean growth', () => {
