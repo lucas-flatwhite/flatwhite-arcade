@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { describe, expect, it } from 'vitest';
-import { homeCommand, matches, readSiteCommands } from '../src/shared/palette';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { homeCommand, loadSiteCommands, matches, readSiteCommands, SITE_COMMANDS_URL } from '../src/shared/palette';
 
 const read = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8');
 const lobby = read('index.html');
@@ -102,10 +102,78 @@ describe('lobby', () => {
   });
 
   it('keeps the way home in the menu even when the homepage list cannot load', () => {
-    expect(homeCommand.href).toBe('https://www.lucasflatwhite.com/');
+    expect(homeCommand.href).toBe('https://lucasflatwhite.com/');
     expect(matches(homeCommand, 'HOMEPAGE')).toBe(true);
     expect(matches(homeCommand, 'snake')).toBe(false);
     expect(matches(homeCommand, '  ')).toBe(true);
+  });
+
+  it('points SITE_COMMANDS_URL and homeCommand at the apex origin rather than www', () => {
+    const palette = read('src/shared/palette.ts');
+
+    expect(SITE_COMMANDS_URL).toBe('https://lucasflatwhite.com/commands.json');
+    expect(homeCommand.href).toBe('https://lucasflatwhite.com/');
+    expect(palette).not.toContain('www.lucasflatwhite.com');
+  });
+
+  describe('loadSiteCommands', () => {
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('fetches SITE_COMMANDS_URL without credentials and returns site-* commands on ok: true', async () => {
+      const fetchMock = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          version: 1,
+          commands: [
+            {
+              id: 'work',
+              label: 'Work',
+              hint: 'Selected projects',
+              icon: ['M0,0Z'],
+              href: 'https://lucasflatwhite.com/#work',
+              external: false,
+              copy: null,
+            },
+          ],
+        }),
+      });
+      vi.stubGlobal('fetch', fetchMock);
+
+      const commands = await loadSiteCommands();
+
+      expect(fetchMock).toHaveBeenCalledWith(SITE_COMMANDS_URL, { credentials: 'omit' });
+      expect(commands).toEqual([
+        {
+          id: 'site-work',
+          label: 'Work',
+          hint: 'Selected projects',
+          icon: ['M0,0Z'],
+          href: 'https://lucasflatwhite.com/#work',
+          external: false,
+          copy: null,
+        },
+      ]);
+    });
+
+    it('returns an empty list when fetch rejects (e.g., CORS failure)', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+
+      await expect(loadSiteCommands()).resolves.toEqual([]);
+    });
+
+    it('returns an empty list when response.ok is false', async () => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({
+          ok: false,
+          json: async () => ({ version: 1, commands: [] }),
+        }),
+      );
+
+      await expect(loadSiteCommands()).resolves.toEqual([]);
+    });
   });
 
   it('sets the A and B buttons side by side without overlap', () => {

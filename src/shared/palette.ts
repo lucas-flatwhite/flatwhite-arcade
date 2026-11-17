@@ -6,8 +6,13 @@
  */
 import './palette.css';
 
-const SITE = 'https://www.lucasflatwhite.com/';
-/** Same origin on www.lucasflatwhite.com; the homepage allows other origins for this one file. */
+const SITE = 'https://lucasflatwhite.com/';
+/**
+ * The homepage's canonical origin. On lucasflatwhite.com/arcade/ this is the same origin;
+ * on flatwhite-arcade.vercel.app and preview deployments the homepage sends
+ * Access-Control-Allow-Origin: * for /commands.json. Never point this at www: www answers
+ * with a 308 redirect that carries no CORS header, so the fetch is blocked.
+ */
 export const SITE_COMMANDS_URL = `${SITE}commands.json`;
 const SITE_COMMANDS_VERSION = 1;
 const COPY_CLOSE_MS = 900;
