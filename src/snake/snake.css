@@ -11,7 +11,7 @@ body.play {
 
 .game-bar {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr minmax(0, auto) 1fr;
   align-items: center;
   gap: 12px;
   min-height: 52px;
@@ -25,11 +25,17 @@ body.play {
 }
 
 .game-score {
+  min-width: 0;
+  max-width: 100%;
   margin: 0;
   font-family: var(--font-mono);
   font-size: 0.82rem;
+  line-height: 1.25;
   letter-spacing: 0.04em;
+  text-align: center;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .game-pause {
@@ -97,6 +103,11 @@ body.play {
   text-align: center;
 }
 
+.overlay-card.is-draft {
+  width: min(100%, 396px);
+  padding: 20px 18px 18px;
+}
+
 .overlay-title {
   margin: 0;
   font-size: 2rem;
@@ -113,6 +124,79 @@ body.play {
   margin: 0;
   color: var(--ink-dim);
   font-size: 0.9rem;
+}
+
+.draft-kicker {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.draft-list {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.draft-option {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.draft-option[hidden] {
+  display: none;
+}
+
+.draft-option:hover,
+.draft-option:focus-visible,
+.draft-option.is-selected {
+  border-color: var(--ink);
+  background: var(--card);
+  outline: none;
+  box-shadow: inset 3px 0 0 var(--crema);
+}
+
+.draft-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.draft-name {
+  font-size: 0.94rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.draft-badge {
+  padding: 1px 6px;
+  border-radius: var(--radius);
+  background: var(--crema);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+.draft-desc {
+  color: var(--ink-dim);
+  font-size: 0.8rem;
+  line-height: 1.35;
 }
 
 .hint-touch {
@@ -198,6 +282,14 @@ body.play {
   font-size: 0.8rem;
 }
 
+.over-cards {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--ink-dim);
+  line-height: 1.4;
+}
+
 .over-best {
   font-family: var(--font-mono);
   font-size: 0.8rem;
@@ -210,12 +302,42 @@ body.play {
   color: var(--ink);
 }
 
+@media (max-width: 700px) {
+  .game-bar {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+
+  .game-score {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    max-height: 2.5em;
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+    white-space: normal;
+  }
+}
+
 @media (max-width: 420px) {
   .game-bar {
     padding-inline: 12px;
   }
+}
+
+@media (max-width: 380px) {
+  .game-bar {
+    gap: 4px;
+  }
 
   .game-score {
-    font-size: 0.74rem;
+    font-size: 0.62rem;
+    letter-spacing: -0.01em;
+  }
+
+  .game-pause {
+    min-width: 54px;
+    padding: 0 8px;
+    font-size: 0.75rem;
   }
 }

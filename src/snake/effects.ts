@@ -68,6 +68,20 @@ export function effectsFor(
       return [ring('ink'), label(`KO +3${combo(event.combo)}`, 'ink')];
     case 'cpu-ate':
       return [ring('rival')];
+    case 'draft':
+      return [ring('crema'), label('tasting note', 'crema')];
+    case 'compress':
+      return [ring('crema'), label('compressed · peak +3', 'crema')];
+    case 'shield-break':
+      return [
+        ring('crema'),
+        label('saved!', 'crema'),
+        { kind: 'shake', bornAt: now, duration: effectTiming.shakeMs },
+      ];
+    case 'tail-cut':
+      return [ring('crema'), label(`tail cut${combo(event.combo)}`, 'crema')];
+    case 'wall-turn':
+      return [ring('crema')];
     case 'death':
       return [ring('ink'), { kind: 'shake', bornAt: now, duration: effectTiming.shakeMs }];
   }
