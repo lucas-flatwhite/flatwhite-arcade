@@ -966,7 +966,7 @@ function trySpawnSpecial(state: GameState, now: number, random: () => number): v
   }
 
   const period = cardLevel(state, 'cold-infusion') >= 2 ? 2 : rules.specialSpawnEvery;
-  state.nextSpecialAt += period;
+  state.nextSpecialAt = Math.max(state.nextSpecialAt + period, state.foodsEaten + 1);
   const kind = nextSpecialKind(state);
   state.specialsSpawned += 1;
   state.special = {
