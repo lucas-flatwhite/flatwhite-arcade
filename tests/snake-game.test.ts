@@ -266,35 +266,43 @@ describe('the rival', () => {
 });
 
 describe('barista card draft and v2 mechanics', () => {
-  it('triggers draft on progressive milestones (4, 9, 15, 22, 30) and pauses step() while in draft phase', () => {
-    const state = soloGame();
+  it('triggers draft on progressive milestones (4, 9, 15, 22, 30), advances draftIndex, and pauses step() while in draft phase', () => {
+    const state = createGame(160, 12, createRandom(9));
+    state.cpu.alive = false;
+    state.cpu.body = [];
+    state.cpu.respawnAt = Number.POSITIVE_INFINITY;
     start(state);
-    state.foodsEaten = 3;
-    const head = state.snake[0]!;
-    state.foods = [{ x: head.x + 1, y: head.y }];
 
-    const events = step(state, createRandom(9), 100);
-    expect(events.some((event) => event.type === 'draft')).toBe(true);
-    expect(state.phase).toBe('draft');
-    expect(state.draft).toHaveLength(3);
-    expect(state.lastDraftAt).toBe(4);
-    expect(state.nextDraftAt).toBe(9);
+    const openedAt: number[] = [];
+    const seenDraftIndices: number[] = [];
+    const rng = createRandom(9);
 
-    // Calling step() while phase === 'draft' must do nothing and must not auto-pick.
-    const frozenHead = { ...state.snake[0]! };
-    expect(step(state, createRandom(9), 200)).toEqual([]);
-    expect(state.phase).toBe('draft');
-    expect(state.snake[0]).toEqual(frozenHead);
+    for (let bean = 1; bean <= 30; bean += 1) {
+      const head = state.snake[0]!;
+      state.foods = [{ x: head.x + 1, y: head.y }];
+      step(state, rng, bean * 100);
 
-    // Picking a card returns to playing and sets soft-start grace.
-    const chosen = state.draft![0]!;
-    expect(pickCard(state, chosen, 200, createRandom(9))).toBe(true);
-    expect(state.phase).toBe('playing');
-    expect(state.draft).toBeNull();
-    expect(state.cards[chosen]).toBe(1);
-    expect(state.graceUntil).toBe(200 + rules.graceMs);
-    expect(stepIntervalMs(state, 200)).toBeCloseTo(stepMs(state.snake.length) / 0.65);
-    expect(stepIntervalMs(state, 200 + rules.graceMs)).toBeCloseTo(stepMs(state.snake.length));
+      if (state.phase === 'draft') {
+        openedAt.push(state.foodsEaten);
+        seenDraftIndices.push(state.draftIndex);
+
+        // Calling step() while phase === 'draft' must do nothing and must not auto-pick.
+        const frozenHead = { ...state.snake[0]! };
+        expect(step(state, rng, bean * 100 + 50)).toEqual([]);
+        expect(state.phase).toBe('draft');
+        expect(state.snake[0]).toEqual(frozenHead);
+
+        const chosen = state.draft![0]!;
+        expect(pickCard(state, chosen, bean * 100 + 50, rng)).toBe(true);
+        expect(state.phase).toBe('playing');
+        expect(state.draft).toBeNull();
+      }
+    }
+
+    expect(openedAt).toEqual([4, 9, 15, 22, 30]);
+    expect(seenDraftIndices).toEqual([0, 1, 2, 3, 4]);
+    expect(state.draftIndex).toBe(5);
+    expect(state.nextDraftAt).toBe(38);
   });
 
   it('queues pendingDrafts when multiple milestones are crossed in one step and opens them back-to-back', () => {
@@ -514,6 +522,31 @@ describe('barista card draft and v2 mechanics', () => {
     step(state, createRandom(7), 300);
     expect(state.playerSlowUntil).toBe(300 + 7500);
     expect(state.cpu.slowUntil).toBe(300 + 5500);
+
+    // Eating 3 beans in one step with period 2 (foodsEaten 2 -> 5, nextSpecialAt 3) must not skip the 5th-bean special.
+    pickCard(state, 'affogato-pull', 300);
+    state.special = null;
+    state.foodsEaten = 2;
+    state.nextSpecialAt = 3;
+    state.specialsSpawned = 0;
+    const h2 = state.snake[0]!;
+    state.foods = [
+      { x: h2.x + 1, y: h2.y },
+      { x: h2.x + 1, y: h2.y - 1 },
+      { x: h2.x + 1, y: h2.y + 1 },
+    ];
+    step(state, createRandom(7), 400);
+    expect(state.foodsEaten).toBe(5);
+    expect(state.specialsSpawned).toBe(1);
+    expect(state.nextSpecialAt).toBe(5);
+    expect(state.special).not.toBeNull();
+
+    // Once the first special is cleared, the next step immediately spawns the queued 5th-bean special.
+    state.special = null;
+    step(state, createRandom(7), 500);
+    expect(state.specialsSpawned).toBe(2);
+    expect(state.nextSpecialAt).toBe(7);
+    expect(state.special).not.toBeNull();
   });
 
   it('reduces effective speed tier with Decaf Pace without altering bean growth', () => {

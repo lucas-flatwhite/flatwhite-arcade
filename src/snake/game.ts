@@ -105,7 +105,7 @@ export const CARDS: Record<CardId, CardDef> = {
     maxLevel: 3,
     minLength: 0,
     descriptions: [
-      'Cold brew calms your speed for 4.5s and spawns 2x as often',
+      'Cold brew calms your speed by 25% for 4.5s (2:1 cold brew ratio)',
       'Special cups spawn every 2 beans; cold brew calms you for 6s',
       'Cold brew calms you for 7.5s and chills the rival for 5.5s',
     ],
@@ -647,6 +647,8 @@ export function pickCard(
     return false;
   }
 
+  const wasDraft = state.draft !== null;
+
   if (id === 'house-blend') {
     state.peakLength = Math.max(state.peakLength, state.snake.length) + 3;
   } else {
@@ -683,6 +685,10 @@ export function pickCard(
     }
   }
 
+  if (wasDraft) {
+    state.draftIndex += 1;
+  }
+
   if (allCardsMaxed(state)) {
     state.nextDraftAt = Number.POSITIVE_INFINITY;
     state.pendingDrafts = 0;
@@ -699,7 +705,6 @@ export function pickCard(
     const nextChoices = drawDraftCards(state, random);
 
     if (nextChoices.length > 0) {
-      state.draftIndex += 1;
       state.draft = nextChoices;
       state.phase = 'draft';
       return true;
@@ -955,6 +960,23 @@ function draftIntervalFor(index: number): number {
   return steps[Math.min(index, steps.length - 1)]!;
 }
 
+function trySpawnSpecial(state: GameState, now: number, random: () => number): void {
+  if (state.special !== null || state.foodsEaten < state.nextSpecialAt) {
+    return;
+  }
+
+  const period = cardLevel(state, 'cold-infusion') >= 2 ? 2 : rules.specialSpawnEvery;
+  state.nextSpecialAt += period;
+  const kind = nextSpecialKind(state);
+  state.specialsSpawned += 1;
+  state.special = {
+    point: pickFreeCell(state.cols, state.rows, occupied(state), random),
+    kind,
+    bornAt: now,
+    expiresAt: now + rules.specialDurationMs,
+  };
+}
+
 function onBeanEaten(
   state: GameState,
   at: Point,
@@ -979,24 +1001,7 @@ function onBeanEaten(
     }
   }
 
-  if (state.foodsEaten >= state.nextSpecialAt) {
-    const period = cardLevel(state, 'cold-infusion') >= 2 ? 2 : rules.specialSpawnEvery;
-
-    while (state.foodsEaten >= state.nextSpecialAt) {
-      state.nextSpecialAt += period;
-    }
-
-    if (!state.special) {
-      const kind = nextSpecialKind(state);
-      state.specialsSpawned += 1;
-      state.special = {
-        point: pickFreeCell(state.cols, state.rows, occupied(state), random),
-        kind,
-        bornAt: now,
-        expiresAt: now + rules.specialDurationMs,
-      };
-    }
-  }
+  trySpawnSpecial(state, now, random);
 
   if (allCardsMaxed(state)) {
     state.nextDraftAt = Number.POSITIVE_INFINITY;
@@ -1079,8 +1084,11 @@ export function step(state: GameState, random: () => number, now: number): GameE
     return events;
   }
 
+  let specialClearedThisStep = false;
+
   if (state.special && now >= state.special.expiresAt) {
     state.special = null;
+    specialClearedThisStep = true;
   }
 
   if (state.combo > 0 && now > state.comboExpiresAt) {
@@ -1174,6 +1182,7 @@ export function step(state: GameState, random: () => number, now: number): GameE
   } else if (state.special && samePoint(nextHead, state.special.point)) {
     const kind = state.special.kind;
     state.special = null;
+    specialClearedThisStep = true;
 
     if (kind === 'espresso') {
       state.growth += rules.espressoGrowth;
@@ -1203,6 +1212,10 @@ export function step(state: GameState, random: () => number, now: number): GameE
   }
 
   applyAffogatoPull(state, nextHead, now, random, events);
+
+  if (!specialClearedThisStep) {
+    trySpawnSpecial(state, now, random);
+  }
 
   if (state.growth > 0) {
     state.growth -= 1;
