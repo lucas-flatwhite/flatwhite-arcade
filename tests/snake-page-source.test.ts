@@ -17,9 +17,9 @@ describe('snake page', () => {
   });
 
   it('offers three tasting card buttons in the draft overlay', () => {
-    expect(page).toContain('data-draft-card="0"');
-    expect(page).toContain('data-draft-card="1"');
-    expect(page).toContain('data-draft-card="2"');
+    expect(page).toContain('data-card-option="0"');
+    expect(page).toContain('data-card-option="1"');
+    expect(page).toContain('data-card-option="2"');
   });
 
   it('explains every item on the board before the first round', () => {

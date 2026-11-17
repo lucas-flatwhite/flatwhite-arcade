@@ -12,6 +12,7 @@ const events: GameEvent[] = [
   { type: 'ko', at, combo: 1 },
   { type: 'cpu-ate', at },
   { type: 'draft', at, cards: ['ristretto', 'paper-filter', 'velvet-foam'] },
+  { type: 'compress', at },
   { type: 'shield-break', at },
   { type: 'tail-cut', at, combo: 2 },
   { type: 'wall-turn', at },

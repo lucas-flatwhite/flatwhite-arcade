@@ -6,16 +6,17 @@ import './snake.css';
 import { effectsFor, liveEffects, type Effect } from './effects';
 import {
   CARDS,
-  CARD_IDS,
   DIRECTIONS,
+  UPGRADEABLE_CARD_IDS,
   cardLevel,
   createGame,
   createRandom,
   fitGrid,
   pickCard,
   refitGrid,
+  resume,
   step,
-  stepMs,
+  stepIntervalMs,
   togglePause,
   turn,
   type Direction,
@@ -30,6 +31,7 @@ const BEST_KEY = 'lucas-flatwhite:best-length';
 const MAX_RATIO = 2;
 /** The crash plays out on the board before the result card covers it. */
 const OVER_CARD_DELAY_MS = 420;
+const DRAFT_GUARD_MS = 300;
 const MAX_FRAME_MS = 100;
 
 const KEY_DIRECTIONS: Record<string, Direction> = {
@@ -76,6 +78,7 @@ function hapticFor(event: GameEvent): number | number[] | null {
       return 8;
     case 'special':
     case 'draft':
+    case 'compress':
     case 'tail-cut':
       return 16;
     case 'ko':
@@ -128,7 +131,7 @@ export function mountSnake(): void {
   };
   const draftKicker = query<HTMLElement>(overlays.draft, '[data-draft-kicker]');
   const draftButtons = Array.from(
-    overlays.draft.querySelectorAll<HTMLButtonElement>('[data-draft-card]'),
+    overlays.draft.querySelectorAll<HTMLButtonElement>('[data-card-option]'),
   );
   const overScore = query<HTMLElement>(stage, '[data-over-score]');
   const overDuel = query<HTMLElement>(stage, '[data-over-duel]');
@@ -159,8 +162,9 @@ export function mountSnake(): void {
   let swipe: SwipeTracker | null = null;
   let swipeFromButton = false;
   let ignoreClicksUntil = 0;
+  let draftReadyAt = 0;
   let lastScore = '';
-  let lastPhaseKey = '';
+  let lastPhase: GameState['phase'] | null = null;
   let draftFocus = 0;
 
   const show = (name: keyof typeof overlays | null): void => {
@@ -183,7 +187,8 @@ export function mountSnake(): void {
     }
 
     draftFocus = 0;
-    draftKicker.textContent = `Tasting Note #${state.draftsTaken}`;
+    draftReadyAt = performance.now() + DRAFT_GUARD_MS;
+    draftKicker.textContent = `Blend #${state.draftIndex + 1}`;
 
     for (let index = 0; index < draftButtons.length; index += 1) {
       const button = draftButtons[index]!;
@@ -201,29 +206,37 @@ export function mountSnake(): void {
       button.hidden = false;
       query<HTMLElement>(button, '[data-card-name]').textContent = def.title;
       query<HTMLElement>(button, '[data-card-level]').textContent =
-        current > 0 ? `Lv.${current} -> Lv.${next}` : `${def.tag} · Lv.1`;
+        def.maxLevel === 0
+          ? def.tag
+          : current > 0
+            ? `${def.tag} · Lv.${current} -> Lv.${next}`
+            : `${def.tag} · New`;
       query<HTMLElement>(button, '[data-card-desc]').textContent = def.descriptions[next - 1];
     }
 
     syncDraftSelection();
     show('draft');
-    status.textContent = 'Tasting Note. Pick one of three cards.';
+    draftButtons[0]?.focus();
+    status.textContent = 'Tasting Note. Pick one to blend into this round.';
   };
 
   const syncChrome = (): void => {
     const peak = Math.max(state.snake.length, state.peakLength);
     const lenLabel =
       peak > state.snake.length
-        ? `length ${state.snake.length} (${peak})`
+        ? `length ${state.snake.length} (peak ${peak})`
         : `length ${state.snake.length}`;
-    const beanSpan = Math.max(1, state.nextDraftAt - state.lastDraftAt);
-    const beanProgress = Math.max(0, Math.min(beanSpan, state.foodsEaten - state.lastDraftAt));
+    const hasNextDraft = Number.isFinite(state.nextDraftAt);
+    const beanSpan = hasNextDraft ? Math.max(1, state.nextDraftAt - state.lastDraftAt) : 0;
+    const beanProgress = hasNextDraft
+      ? Math.max(0, Math.min(beanSpan, state.foodsEaten - state.lastDraftAt))
+      : 0;
     const text =
       state.phase === 'over'
         ? lenLabel
         : [
             lenLabel,
-            `bean ${beanProgress}/${beanSpan}`,
+            hasNextDraft ? `bean ${beanProgress}/${beanSpan}` : '',
             state.shield ? 'shield' : '',
             state.combo >= 2 && world <= state.comboExpiresAt ? `${state.combo}x` : '',
             `cpu ${state.cpu.alive ? state.cpu.body.length : 0}`,
@@ -236,15 +249,13 @@ export function mountSnake(): void {
       scoreText.textContent = text;
     }
 
-    const phaseKey = `${state.phase}:${state.draft ? 'draft' : 'live'}`;
-
     // Touch the DOM only when something changed: a write every frame costs a style and layout pass.
-    if (phaseKey === lastPhaseKey) {
+    if (state.phase === lastPhase) {
       return;
     }
 
-    lastPhaseKey = phaseKey;
-    const live = (state.phase === 'playing' || state.phase === 'paused') && state.draft === null;
+    lastPhase = state.phase;
+    const live = state.phase === 'playing' || state.phase === 'paused';
     pauseButton.disabled = !live;
     pauseButton.setAttribute('aria-pressed', String(state.phase === 'paused'));
     pauseButton.textContent = state.phase === 'paused' ? 'Resume' : 'Pause';
@@ -277,7 +288,7 @@ export function mountSnake(): void {
       state.maxCombo >= 2 ? `max ${state.maxCombo}x` : '',
       state.kos > 0 ? `ko ${state.kos}` : '',
     ].filter(Boolean);
-    const activeCards = CARD_IDS.filter((id) => cardLevel(state, id) > 0).map((id) => {
+    const activeCards = UPGRADEABLE_CARD_IDS.filter((id) => cardLevel(state, id) > 0).map((id) => {
       const lv = cardLevel(state, id);
       return lv > 1 ? `${CARDS[id].title} Lv.${lv}` : CARDS[id].title;
     });
@@ -309,35 +320,34 @@ export function mountSnake(): void {
     }
   };
 
-  // World time stands still while paused or picking a card, so timers never tick down mid-choice.
+  // World time stands still while paused or drafting, so timers never tick down mid-choice.
   const animating = (): boolean =>
-    state.phase !== 'paused' &&
-    state.draft === null &&
-    (state.phase === 'playing' ||
-      effects.length > 0 ||
-      (overAt !== null && world - overAt < Math.max(OVER_CARD_DELAY_MS, state.snake.length * 22 + 200)));
+    state.phase === 'playing' ||
+    (state.phase === 'over' &&
+      (effects.length > 0 ||
+        (overAt !== null && world - overAt < Math.max(OVER_CARD_DELAY_MS, state.snake.length * 22 + 200))));
 
   const tick = (time: number): void => {
     frame = 0;
     const delta = lastFrameAt === 0 ? 0 : Math.min(MAX_FRAME_MS, time - lastFrameAt);
     lastFrameAt = time;
 
-    if (state.phase !== 'paused' && state.draft === null) {
+    if (state.phase === 'playing' || state.phase === 'over') {
       world += delta;
     }
 
-    if (state.phase === 'playing' && state.draft === null) {
-      let ms = stepMs(state, world);
+    if (state.phase === 'playing') {
+      let ms = stepIntervalMs(state, world);
 
       // After a stall (a slow frame, a hidden tab), drop the backlog instead of jumping ahead.
       if (world - lastStepAt > ms * 3) {
         lastStepAt = world - ms;
       }
 
-      while (state.phase === 'playing' && state.draft === null && world - lastStepAt >= ms) {
+      while (state.phase === 'playing' && world - lastStepAt >= ms) {
         lastStepAt += ms;
         handleEvents(step(state, random, lastStepAt));
-        ms = stepMs(state, world);
+        ms = stepIntervalMs(state, world);
       }
     }
 
@@ -364,6 +374,10 @@ export function mountSnake(): void {
   };
 
   const chooseDraftCard = (index: number): void => {
+    if (state.phase !== 'draft' || performance.now() < draftReadyAt) {
+      return;
+    }
+
     const choices = state.draft;
 
     if (!choices || index < 0 || index >= choices.length) {
@@ -371,7 +385,19 @@ export function mountSnake(): void {
     }
 
     const chosen = choices[index]!;
+    const head = state.snake[0]!;
     pickCard(state, chosen, world, random);
+
+    if (chosen === 'ristretto') {
+      handleEvents([{ type: 'compress', at: head }]);
+    }
+
+    if (state.phase === 'draft') {
+      openDraft();
+      draw();
+      return;
+    }
+
     lastStepAt = world;
     show(null);
     status.textContent = `${CARDS[chosen].title} blended.`;
@@ -423,7 +449,7 @@ export function mountSnake(): void {
   };
 
   const steer = (direction: Direction): void => {
-    if (state.draft !== null) {
+    if (state.phase === 'draft') {
       return;
     }
 
@@ -436,11 +462,21 @@ export function mountSnake(): void {
   };
 
   const pause = (): void => {
-    if (state.draft !== null) {
+    if (state.phase === 'draft') {
       return;
     }
 
     const was = state.phase;
+
+    if (was === 'paused') {
+      resume(state, world);
+      lastStepAt = world;
+      show(null);
+      status.textContent = '';
+      wake();
+      return;
+    }
+
     togglePause(state, world);
 
     if (was === 'ready') {
@@ -449,16 +485,11 @@ export function mountSnake(): void {
       show('paused');
       status.textContent = 'Paused';
       draw();
-    } else if (was === 'paused') {
-      lastStepAt = world;
-      show(null);
-      status.textContent = '';
-      wake();
     }
   };
 
   const pauseIfPlaying = (): void => {
-    if (state.phase === 'playing' && state.draft === null) {
+    if (state.phase === 'playing') {
       pause();
     }
   };
@@ -473,7 +504,7 @@ export function mountSnake(): void {
       return;
     }
 
-    if (state.draft !== null) {
+    if (state.phase === 'draft' && state.draft !== null) {
       const count = state.draft.length;
 
       if (event.key === '1' || event.key === '2' || event.key === '3') {
@@ -494,6 +525,7 @@ export function mountSnake(): void {
         event.preventDefault();
         draftFocus = (draftFocus - 1 + count) % count;
         syncDraftSelection();
+        draftButtons[draftFocus]?.focus();
         return;
       }
 
@@ -506,6 +538,7 @@ export function mountSnake(): void {
         event.preventDefault();
         draftFocus = (draftFocus + 1) % count;
         syncDraftSelection();
+        draftButtons[draftFocus]?.focus();
         return;
       }
 
@@ -560,7 +593,7 @@ export function mountSnake(): void {
   });
 
   stage.addEventListener('pointermove', (event) => {
-    if (!swipe || !event.isPrimary || event.pointerType === 'mouse' || state.draft !== null) {
+    if (!swipe || !event.isPrimary || event.pointerType === 'mouse' || state.phase === 'draft') {
       return;
     }
 
@@ -582,7 +615,7 @@ export function mountSnake(): void {
     swipe = null;
 
     // A tap on a button is the button's own click.
-    if (!tapped || swipeFromButton || state.draft !== null) {
+    if (!tapped || swipeFromButton || state.phase === 'draft') {
       return;
     }
 
@@ -598,7 +631,7 @@ export function mountSnake(): void {
   });
 
   pauseButton.addEventListener('click', () => {
-    if ((state.phase === 'playing' || state.phase === 'paused') && state.draft === null) {
+    if (state.phase === 'playing' || state.phase === 'paused') {
       pause();
     }
   });
@@ -609,7 +642,7 @@ export function mountSnake(): void {
         return;
       }
 
-      const index = Number(button.dataset.draftCard);
+      const index = Number(button.dataset.cardOption);
       chooseDraftCard(index);
     });
   }

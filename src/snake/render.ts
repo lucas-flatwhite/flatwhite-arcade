@@ -300,6 +300,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, scene: Scene, cell: number): 
   const inset = Math.max(1.5, cell * 0.08);
   const radius = Math.min(6, cell * 0.22);
   const ghostCount = now >= state.tailCutReadyAt ? ghostTailCount(state) : 0;
+  const playerChilled = now < state.playerSlowUntil && overAt === null;
 
   for (let index = length - 1; index >= 0; index -= 1) {
     const segment = state.snake[index]!;
@@ -344,6 +345,15 @@ function drawPlayer(ctx: CanvasRenderingContext2D, scene: Scene, cell: number): 
       ctx.globalAlpha = alpha;
       ctx.fillStyle = palette.ink;
       ctx.fill();
+
+      if (playerChilled) {
+        ctx.save();
+        ctx.globalAlpha = alpha * 0.55;
+        ctx.lineWidth = Math.max(1.2, cell * 0.05);
+        ctx.strokeStyle = palette.cold;
+        ctx.stroke();
+        ctx.restore();
+      }
     }
   }
 
@@ -352,8 +362,13 @@ function drawPlayer(ctx: CanvasRenderingContext2D, scene: Scene, cell: number): 
   const head = state.snake[0];
 
   if (head && overAt === null) {
-    if (state.shield) {
+    const stalling = now < state.stallUntil;
+
+    if (state.shield || stalling) {
       ctx.save();
+      if (stalling && !reducedMotion) {
+        ctx.globalAlpha = 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(now * 0.025));
+      }
       roundedRect(
         ctx,
         head.x * cell + inset * 0.5,
@@ -368,7 +383,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, scene: Scene, cell: number): 
       ctx.restore();
     }
 
-    drawEye(ctx, head, state.direction, cell, now < state.playerSlowUntil);
+    drawEye(ctx, head, state.direction, cell, playerChilled);
   }
 }
 
@@ -472,10 +487,8 @@ export function drawScene(
     drawDrop(ctx, (drop.x + 0.5) * cell, (drop.y + 0.5) * cell, cell);
   }
 
-  drawBean(ctx, (state.food.x + 0.5) * cell, (state.food.y + 0.5) * cell, cell);
-
-  for (const extra of state.extraFoods) {
-    drawBean(ctx, (extra.x + 0.5) * cell, (extra.y + 0.5) * cell, cell);
+  for (const bean of state.foods) {
+    drawBean(ctx, (bean.x + 0.5) * cell, (bean.y + 0.5) * cell, cell);
   }
 
   if (state.special) {

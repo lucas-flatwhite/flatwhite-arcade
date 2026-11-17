@@ -1,4 +1,4 @@
-import { DIRECTIONS, samePoint, type Direction, type GameState, type Point } from '../snake/game';
+import { DIRECTIONS, nearestBean, samePoint, type Direction, type GameState, type Point } from '../snake/game';
 
 /**
  * Steers the attract-mode snake: head for the nearest cup or bean, never into a wall or
@@ -12,7 +12,7 @@ export function autopilot(state: GameState): Direction | null {
     return null;
   }
 
-  const target = state.special?.point ?? state.food;
+  const target = state.special?.point ?? nearestBean(head, state.foods);
   const blocked = (point: Point): boolean =>
     point.x < 0 ||
     point.y < 0 ||

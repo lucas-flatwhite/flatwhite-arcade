@@ -3,9 +3,10 @@ import {
   DIRECTIONS,
   createGame,
   createRandom,
+  pickCard,
   refitGrid,
   step,
-  stepMs,
+  stepIntervalMs,
   turn,
   type GameState,
   type Grid,
@@ -62,6 +63,10 @@ export function mountAttract(
   };
 
   const advance = (): void => {
+    while (state.phase === 'draft' && state.draft && state.draft.length > 0) {
+      pickCard(state, state.draft[0]!, lastStepAt, random);
+    }
+
     const next = autopilot(state);
 
     if (next) {
@@ -74,6 +79,10 @@ export function mountAttract(
       if (event.type === 'death') {
         overAt = world;
       }
+    }
+
+    while (state.phase === 'draft' && state.draft && state.draft.length > 0) {
+      pickCard(state, state.draft[0]!, lastStepAt, random);
     }
   };
 
@@ -127,7 +136,7 @@ export function mountAttract(
         changed = true;
       }
     } else {
-      let ms = stepMs(state.snake.length);
+      let ms = stepIntervalMs(state, world);
 
       if (world - lastStepAt > ms * 3) {
         lastStepAt = world - ms;
@@ -136,7 +145,7 @@ export function mountAttract(
       while (overAt === null && world - lastStepAt >= ms) {
         lastStepAt += ms;
         advance();
-        ms = stepMs(state.snake.length);
+        ms = stepIntervalMs(state, world);
         changed = true;
       }
     }
@@ -170,7 +179,7 @@ export function mountAttract(
     newRound();
 
     for (let index = 0; index < STILL_STEPS && overAt === null; index += 1) {
-      lastStepAt += stepMs(state.snake.length);
+      lastStepAt += stepIntervalMs(state, lastStepAt);
       advance();
     }
 
