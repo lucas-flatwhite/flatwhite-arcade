@@ -8,11 +8,18 @@ const styles = read('src/snake/snake.css');
 const pkg = JSON.parse(read('package.json'));
 
 describe('snake page', () => {
-  it('has a ready card, a pause card and a result card over the board', () => {
+  it('has ready, draft, pause and result cards over the board', () => {
     expect(page).toContain('data-overlay="ready"');
+    expect(page).toContain('data-overlay="draft" aria-labelledby="draft-title" hidden');
     expect(page).toContain('data-overlay="paused" aria-labelledby="paused-title" hidden');
     expect(page).toContain('data-overlay="over" aria-labelledby="over-title" hidden');
     expect(page).toContain('role="status" data-status');
+  });
+
+  it('offers three tasting card buttons in the draft overlay', () => {
+    expect(page).toContain('data-draft-card="0"');
+    expect(page).toContain('data-draft-card="1"');
+    expect(page).toContain('data-draft-card="2"');
   });
 
   it('explains every item on the board before the first round', () => {

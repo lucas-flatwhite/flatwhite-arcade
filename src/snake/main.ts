@@ -5,10 +5,14 @@ import '../shared/arcade-chip.css';
 import './snake.css';
 import { effectsFor, liveEffects, type Effect } from './effects';
 import {
+  CARDS,
+  CARD_IDS,
   DIRECTIONS,
+  cardLevel,
   createGame,
   createRandom,
   fitGrid,
+  pickCard,
   refitGrid,
   step,
   stepMs,
@@ -68,10 +72,14 @@ function hapticFor(event: GameEvent): number | number[] | null {
   switch (event.type) {
     case 'bean':
     case 'drop':
+    case 'wall-turn':
       return 8;
     case 'special':
+    case 'draft':
+    case 'tail-cut':
       return 16;
     case 'ko':
+    case 'shield-break':
       return [12, 40, 12];
     case 'death':
       return 40;
@@ -114,11 +122,17 @@ export function mountSnake(): void {
   const status = query<HTMLElement>(stage, '[data-status]');
   const overlays = {
     ready: query<HTMLElement>(stage, '[data-overlay="ready"]'),
+    draft: query<HTMLElement>(stage, '[data-overlay="draft"]'),
     paused: query<HTMLElement>(stage, '[data-overlay="paused"]'),
     over: query<HTMLElement>(stage, '[data-overlay="over"]'),
   };
+  const draftKicker = query<HTMLElement>(overlays.draft, '[data-draft-kicker]');
+  const draftButtons = Array.from(
+    overlays.draft.querySelectorAll<HTMLButtonElement>('[data-draft-card]'),
+  );
   const overScore = query<HTMLElement>(stage, '[data-over-score]');
   const overDuel = query<HTMLElement>(stage, '[data-over-duel]');
+  const overCards = query<HTMLElement>(stage, '[data-over-cards]');
   const overBest = query<HTMLElement>(stage, '[data-over-best]');
   const ctx = canvas.getContext('2d');
 
@@ -146,7 +160,8 @@ export function mountSnake(): void {
   let swipeFromButton = false;
   let ignoreClicksUntil = 0;
   let lastScore = '';
-  let lastPhase: GameState['phase'] | null = null;
+  let lastPhaseKey = '';
+  let draftFocus = 0;
 
   const show = (name: keyof typeof overlays | null): void => {
     for (const [key, element] of Object.entries(overlays)) {
@@ -154,12 +169,62 @@ export function mountSnake(): void {
     }
   };
 
+  const syncDraftSelection = (): void => {
+    for (let index = 0; index < draftButtons.length; index += 1) {
+      draftButtons[index]?.classList.toggle('is-selected', index === draftFocus);
+    }
+  };
+
+  const openDraft = (): void => {
+    const choices = state.draft;
+
+    if (!choices || choices.length === 0) {
+      return;
+    }
+
+    draftFocus = 0;
+    draftKicker.textContent = `Tasting Note #${state.draftsTaken}`;
+
+    for (let index = 0; index < draftButtons.length; index += 1) {
+      const button = draftButtons[index]!;
+      const cardId = choices[index];
+
+      if (!cardId) {
+        button.hidden = true;
+        continue;
+      }
+
+      const def = CARDS[cardId];
+      const current = cardLevel(state, cardId);
+      const next = Math.min(3, current + 1) as 1 | 2 | 3;
+
+      button.hidden = false;
+      query<HTMLElement>(button, '[data-card-name]').textContent = def.title;
+      query<HTMLElement>(button, '[data-card-level]').textContent =
+        current > 0 ? `Lv.${current} -> Lv.${next}` : `${def.tag} · Lv.1`;
+      query<HTMLElement>(button, '[data-card-desc]').textContent = def.descriptions[next - 1];
+    }
+
+    syncDraftSelection();
+    show('draft');
+    status.textContent = 'Tasting Note. Pick one of three cards.';
+  };
+
   const syncChrome = (): void => {
+    const peak = Math.max(state.snake.length, state.peakLength);
+    const lenLabel =
+      peak > state.snake.length
+        ? `length ${state.snake.length} (${peak})`
+        : `length ${state.snake.length}`;
+    const beanSpan = Math.max(1, state.nextDraftAt - state.lastDraftAt);
+    const beanProgress = Math.max(0, Math.min(beanSpan, state.foodsEaten - state.lastDraftAt));
     const text =
       state.phase === 'over'
-        ? `length ${state.snake.length}`
+        ? lenLabel
         : [
-            `length ${state.snake.length}`,
+            lenLabel,
+            `bean ${beanProgress}/${beanSpan}`,
+            state.shield ? 'shield' : '',
             state.combo >= 2 && world <= state.comboExpiresAt ? `${state.combo}x` : '',
             `cpu ${state.cpu.alive ? state.cpu.body.length : 0}`,
           ]
@@ -171,13 +236,15 @@ export function mountSnake(): void {
       scoreText.textContent = text;
     }
 
+    const phaseKey = `${state.phase}:${state.draft ? 'draft' : 'live'}`;
+
     // Touch the DOM only when something changed: a write every frame costs a style and layout pass.
-    if (state.phase === lastPhase) {
+    if (phaseKey === lastPhaseKey) {
       return;
     }
 
-    lastPhase = state.phase;
-    const live = state.phase === 'playing' || state.phase === 'paused';
+    lastPhaseKey = phaseKey;
+    const live = (state.phase === 'playing' || state.phase === 'paused') && state.draft === null;
     pauseButton.disabled = !live;
     pauseButton.setAttribute('aria-pressed', String(state.phase === 'paused'));
     pauseButton.textContent = state.phase === 'paused' ? 'Resume' : 'Pause';
@@ -196,7 +263,7 @@ export function mountSnake(): void {
   };
 
   const finishRound = (): void => {
-    const length = state.snake.length;
+    const length = Math.max(state.snake.length, state.peakLength);
     const rival = state.cpu.best;
     const isNewBest = length > best;
 
@@ -210,9 +277,15 @@ export function mountSnake(): void {
       state.maxCombo >= 2 ? `max ${state.maxCombo}x` : '',
       state.kos > 0 ? `ko ${state.kos}` : '',
     ].filter(Boolean);
+    const activeCards = CARD_IDS.filter((id) => cardLevel(state, id) > 0).map((id) => {
+      const lv = cardLevel(state, id);
+      return lv > 1 ? `${CARDS[id].title} Lv.${lv}` : CARDS[id].title;
+    });
 
     overScore.textContent = String(length);
     overDuel.textContent = [`vs cpu best ${rival} · ${verdict}`, ...extras].join(' · ');
+    overCards.textContent = activeCards.join(' · ');
+    overCards.hidden = activeCards.length === 0;
     overBest.textContent = isNewBest ? `new record! best ${best}` : `best ${best}`;
     overBest.classList.toggle('is-new', isNewBest);
     status.textContent = `퇴근. Length ${length}, ${verdict} against the rival.`;
@@ -230,13 +303,16 @@ export function mountSnake(): void {
       if (event.type === 'death') {
         overAt = world;
         finishRound();
+      } else if (event.type === 'draft') {
+        openDraft();
       }
     }
   };
 
-  // World time stands still while paused, so a paused board has nothing left to animate.
+  // World time stands still while paused or picking a card, so timers never tick down mid-choice.
   const animating = (): boolean =>
     state.phase !== 'paused' &&
+    state.draft === null &&
     (state.phase === 'playing' ||
       effects.length > 0 ||
       (overAt !== null && world - overAt < Math.max(OVER_CARD_DELAY_MS, state.snake.length * 22 + 200)));
@@ -246,22 +322,22 @@ export function mountSnake(): void {
     const delta = lastFrameAt === 0 ? 0 : Math.min(MAX_FRAME_MS, time - lastFrameAt);
     lastFrameAt = time;
 
-    if (state.phase !== 'paused') {
+    if (state.phase !== 'paused' && state.draft === null) {
       world += delta;
     }
 
-    if (state.phase === 'playing') {
-      let ms = stepMs(state.snake.length);
+    if (state.phase === 'playing' && state.draft === null) {
+      let ms = stepMs(state, world);
 
       // After a stall (a slow frame, a hidden tab), drop the backlog instead of jumping ahead.
       if (world - lastStepAt > ms * 3) {
         lastStepAt = world - ms;
       }
 
-      while (state.phase === 'playing' && world - lastStepAt >= ms) {
+      while (state.phase === 'playing' && state.draft === null && world - lastStepAt >= ms) {
         lastStepAt += ms;
         handleEvents(step(state, random, lastStepAt));
-        ms = stepMs(state.snake.length);
+        ms = stepMs(state, world);
       }
     }
 
@@ -285,6 +361,22 @@ export function mountSnake(): void {
     if (frame === 0) {
       frame = window.requestAnimationFrame(tick);
     }
+  };
+
+  const chooseDraftCard = (index: number): void => {
+    const choices = state.draft;
+
+    if (!choices || index < 0 || index >= choices.length) {
+      return;
+    }
+
+    const chosen = choices[index]!;
+    pickCard(state, chosen, world, random);
+    lastStepAt = world;
+    show(null);
+    status.textContent = `${CARDS[chosen].title} blended.`;
+    draw();
+    wake();
   };
 
   const newRound = (): void => {
@@ -331,6 +423,10 @@ export function mountSnake(): void {
   };
 
   const steer = (direction: Direction): void => {
+    if (state.draft !== null) {
+      return;
+    }
+
     const wasReady = state.phase === 'ready';
     turn(state, direction);
 
@@ -340,8 +436,12 @@ export function mountSnake(): void {
   };
 
   const pause = (): void => {
+    if (state.draft !== null) {
+      return;
+    }
+
     const was = state.phase;
-    togglePause(state);
+    togglePause(state, world);
 
     if (was === 'ready') {
       begin();
@@ -350,6 +450,7 @@ export function mountSnake(): void {
       status.textContent = 'Paused';
       draw();
     } else if (was === 'paused') {
+      lastStepAt = world;
       show(null);
       status.textContent = '';
       wake();
@@ -357,7 +458,7 @@ export function mountSnake(): void {
   };
 
   const pauseIfPlaying = (): void => {
-    if (state.phase === 'playing') {
+    if (state.phase === 'playing' && state.draft === null) {
       pause();
     }
   };
@@ -369,6 +470,51 @@ export function mountSnake(): void {
 
     // A focused navigation link keeps native keyboard activation in every phase.
     if (event.target instanceof Element && event.target.closest('a[href]')) {
+      return;
+    }
+
+    if (state.draft !== null) {
+      const count = state.draft.length;
+
+      if (event.key === '1' || event.key === '2' || event.key === '3') {
+        const idx = Number(event.key) - 1;
+        if (idx < count) {
+          event.preventDefault();
+          chooseDraftCard(idx);
+        }
+        return;
+      }
+
+      if (
+        event.key === 'ArrowUp' ||
+        event.key === 'ArrowLeft' ||
+        event.key.toLowerCase() === 'w' ||
+        event.key.toLowerCase() === 'a'
+      ) {
+        event.preventDefault();
+        draftFocus = (draftFocus - 1 + count) % count;
+        syncDraftSelection();
+        return;
+      }
+
+      if (
+        event.key === 'ArrowDown' ||
+        event.key === 'ArrowRight' ||
+        event.key.toLowerCase() === 's' ||
+        event.key.toLowerCase() === 'd'
+      ) {
+        event.preventDefault();
+        draftFocus = (draftFocus + 1) % count;
+        syncDraftSelection();
+        return;
+      }
+
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        chooseDraftCard(draftFocus);
+        return;
+      }
+
       return;
     }
 
@@ -414,7 +560,7 @@ export function mountSnake(): void {
   });
 
   stage.addEventListener('pointermove', (event) => {
-    if (!swipe || !event.isPrimary || event.pointerType === 'mouse') {
+    if (!swipe || !event.isPrimary || event.pointerType === 'mouse' || state.draft !== null) {
       return;
     }
 
@@ -436,7 +582,7 @@ export function mountSnake(): void {
     swipe = null;
 
     // A tap on a button is the button's own click.
-    if (!tapped || swipeFromButton) {
+    if (!tapped || swipeFromButton || state.draft !== null) {
       return;
     }
 
@@ -452,10 +598,21 @@ export function mountSnake(): void {
   });
 
   pauseButton.addEventListener('click', () => {
-    if (state.phase === 'playing' || state.phase === 'paused') {
+    if ((state.phase === 'playing' || state.phase === 'paused') && state.draft === null) {
       pause();
     }
   });
+
+  for (const button of draftButtons) {
+    button.addEventListener('click', () => {
+      if (performance.now() < ignoreClicksUntil) {
+        return;
+      }
+
+      const index = Number(button.dataset.draftCard);
+      chooseDraftCard(index);
+    });
+  }
 
   for (const button of stage.querySelectorAll<HTMLButtonElement>('[data-action]')) {
     button.addEventListener('click', () => {

@@ -7,6 +7,126 @@ export type Point = { x: number; y: number };
 export type Direction = Point;
 export type Phase = 'ready' | 'playing' | 'paused' | 'over';
 export type SpecialKind = 'espresso' | 'coldbrew';
+export type CardCategory = 'roast' | 'ice' | 'crema';
+export type CardId =
+  | 'ristretto'
+  | 'paper-filter'
+  | 'crema-rim'
+  | 'velvet-foam'
+  | 'cold-infusion'
+  | 'decaf-pace'
+  | 'affogato-pull'
+  | 'double-shot';
+
+export type CardDef = {
+  id: CardId;
+  title: string;
+  category: CardCategory;
+  tag: string;
+  descriptions: readonly [string, string, string];
+};
+
+export const CARD_IDS: readonly CardId[] = [
+  'ristretto',
+  'paper-filter',
+  'crema-rim',
+  'velvet-foam',
+  'cold-infusion',
+  'decaf-pace',
+  'affogato-pull',
+  'double-shot',
+] as const;
+
+export const CARDS: Record<CardId, CardDef> = {
+  ristretto: {
+    id: 'ristretto',
+    title: 'Ristretto',
+    category: 'roast',
+    tag: 'Body',
+    descriptions: [
+      'Compress body by 25% into crema drops, peak +3',
+      'Compress body by 30% into crema drops, peak +3',
+      'Compress body by 35% into crema drops, peak +3',
+    ],
+  },
+  'paper-filter': {
+    id: 'paper-filter',
+    title: 'Paper Filter',
+    category: 'roast',
+    tag: 'Tail',
+    descriptions: [
+      'Last 4 tail cells become ghost: cross to cut into drops',
+      'Last 7 tail cells become ghost: cross to cut into drops',
+      'Last 10 tail cells become ghost: cross to cut into drops',
+    ],
+  },
+  'crema-rim': {
+    id: 'crema-rim',
+    title: 'Crema Rim',
+    category: 'roast',
+    tag: 'Wall',
+    descriptions: [
+      'Auto-turn at a wall into open space (6s cooldown)',
+      'Auto-turn at a wall into open space (4s cooldown)',
+      'Auto-turn at a wall into open space (2.5s cooldown)',
+    ],
+  },
+  'velvet-foam': {
+    id: 'velvet-foam',
+    title: 'Velvet Foam',
+    category: 'ice',
+    tag: 'Shield',
+    descriptions: [
+      'Gain a crema shield; recharges every 6 beans',
+      'Gain a crema shield; recharges every 5 beans',
+      'Gain a crema shield; recharges every 4 beans',
+    ],
+  },
+  'cold-infusion': {
+    id: 'cold-infusion',
+    title: 'Cold Infusion',
+    category: 'ice',
+    tag: 'Pace',
+    descriptions: [
+      'Cold brew also calms your speed by 25% for 4.5s',
+      'Cold brew calms your speed for 6s and slows rival longer',
+      'Cold brew calms your speed for 7.5s and slows rival longer',
+    ],
+  },
+  'decaf-pace': {
+    id: 'decaf-pace',
+    title: 'Decaf Pace',
+    category: 'ice',
+    tag: 'Tempo',
+    descriptions: [
+      'Run as if 8 cells shorter; beans grow +1 extra',
+      'Run as if 16 cells shorter; beans grow +1 extra',
+      'Run as if 24 cells shorter; beans grow +2 extra',
+    ],
+  },
+  'affogato-pull': {
+    id: 'affogato-pull',
+    title: 'Affogato Pull',
+    category: 'crema',
+    tag: 'Magnet',
+    descriptions: [
+      'Pull beans and drops 1 step beside the head',
+      'Pull beans and drops in a 3x3 ring around the head',
+      'Pull beans and drops within 2 steps of the head',
+    ],
+  },
+  'double-shot': {
+    id: 'double-shot',
+    title: 'Double Shot',
+    category: 'crema',
+    tag: 'Combo',
+    descriptions: [
+      'Keep 2 beans on the board; combo window +1.5s',
+      'Keep 2 beans on the board; combo window +3s',
+      'Keep 3 beans on the board; combo window +4.5s',
+    ],
+  },
+};
 
 export const rules = {
   /** The short side of the board always holds this many cells, so a phone and a desktop play the same game. */
@@ -14,10 +134,10 @@ export const rules = {
   minCellPx: 18,
   maxCellPx: 56,
   boardMarginPx: 8,
-  baseSpeed: 7,
-  maxSpeed: 12,
-  speedRampEvery: 4,
-  beanGrowth: 2,
+  baseSpeed: 6.5,
+  maxSpeed: 11,
+  speedRampEvery: 7,
+  beanGrowth: 1,
   dropGrowth: 2,
   espressoGrowth: 4,
   coldbrewGrowth: 2,
@@ -30,6 +150,14 @@ export const rules = {
   cpuKoGrowth: 3,
   cpuWanderChance: 0.12,
   maxQueuedTurns: 2,
+  firstDraftBeans: 4,
+  maxDraftInterval: 8,
+  draftChoices: 3,
+  maxCardLevel: 3,
+  resumeGraceMs: 1200,
+  playerChillMs: 4500,
+  shieldCost: 3,
+  tailCutCooldownMs: 2000,
 } as const;
 
 export const DIRECTIONS = {
@@ -76,6 +204,7 @@ export type GameState = {
   turns: Direction[];
   growth: number;
   food: Point;
+  extraFoods: Point[];
   special: Special | null;
   drops: Point[];
   foodsEaten: number;
@@ -85,14 +214,31 @@ export type GameState = {
   kos: number;
   cpu: Cpu;
   deathAt: Point | null;
+  /** Longest length reached this round, preserved even when cards compress or spend body segments. */
+  peakLength: number;
+  cards: Partial<Record<CardId, number>>;
+  draft: readonly CardId[] | null;
+  draftsTaken: number;
+  lastDraftAt: number;
+  nextDraftAt: number;
+  shield: boolean;
+  shieldBeans: number;
+  graceUntil: number;
+  playerSlowUntil: number;
+  rimReadyAt: number;
+  tailCutReadyAt: number;
 };
 
 export type GameEvent =
-  | { type: 'bean'; at: Point; combo: number }
+  | { type: 'bean'; at: Point; combo: number; gain?: number }
   | { type: 'special'; at: Point; kind: SpecialKind; combo: number }
   | { type: 'drop'; at: Point; combo: number }
   | { type: 'ko'; at: Point; combo: number }
   | { type: 'cpu-ate'; at: Point }
+  | { type: 'draft'; at: Point; cards: readonly CardId[] }
+  | { type: 'shield-break'; at: Point }
+  | { type: 'tail-cut'; at: Point; combo: number }
+  | { type: 'wall-turn'; at: Point }
   | { type: 'death'; at: Point };
 
 export function createRandom(seed: number): () => number {
@@ -144,14 +290,53 @@ export function refitGrid(width: number, height: number, cols: number, rows: num
   };
 }
 
-/** How long one step lasts at this length: 7 steps a second, one faster every 4 cells, up to 12. */
-export function stepMs(length: number): number {
-  const speed = Math.min(
+export function cardLevel(state: Pick<GameState, 'cards'>, id: CardId): number {
+  return state.cards[id] ?? 0;
+}
+
+/** Number of tail segments that Paper Filter turns into passable ghost cells. */
+export function ghostTailCount(state: Pick<GameState, 'snake' | 'cards'>): number {
+  const level = cardLevel(state, 'paper-filter');
+
+  if (level <= 0) {
+    return 0;
+  }
+
+  const raw = level === 1 ? 4 : level === 2 ? 7 : 10;
+  return Math.max(0, Math.min(raw, state.snake.length - 4));
+}
+
+/**
+ * How long one step lasts: starts at 6.5 steps a second, adds 1 every 7 cells, up to 11.
+ * Accepts either a raw length or a full GameState so active cards and soft-start grace apply.
+ */
+export function stepMs(lengthOrState: number | GameState, now = 0): number {
+  if (typeof lengthOrState === 'number') {
+    const speed = Math.min(
+      rules.maxSpeed,
+      rules.baseSpeed + Math.floor(Math.max(0, lengthOrState - 3) / rules.speedRampEvery),
+    );
+    return 1000 / speed;
+  }
+
+  const state = lengthOrState;
+  const decaf = cardLevel(state, 'decaf-pace');
+  const effectiveLength = Math.max(3, state.snake.length - decaf * 8);
+  let speed = Math.min(
     rules.maxSpeed,
-    rules.baseSpeed + Math.floor(Math.max(0, length - 3) / rules.speedRampEvery),
+    rules.baseSpeed + Math.floor(Math.max(0, effectiveLength - 3) / rules.speedRampEvery),
   );
 
-  return 1000 / speed;
+  if (now < state.playerSlowUntil) {
+    speed *= 0.75;
+  }
+
+  if (now < state.graceUntil) {
+    const remaining = Math.min(1, Math.max(0, (state.graceUntil - now) / rules.resumeGraceMs));
+    speed *= 1 - 0.35 * remaining;
+  }
+
+  return 1000 / Math.max(3, speed);
 }
 
 export function samePoint(a: Point, b: Point): boolean {
@@ -167,7 +352,7 @@ function inside(state: { cols: number; rows: number }, point: Point): boolean {
 }
 
 function occupied(state: GameState): Point[] {
-  const cells = [...state.snake, ...state.cpu.body, state.food, ...state.drops];
+  const cells = [...state.snake, ...state.cpu.body, state.food, ...state.extraFoods, ...state.drops];
 
   if (state.special) {
     cells.push(state.special.point);
@@ -241,6 +426,7 @@ export function createGame(cols: number, rows: number, random: () => number): Ga
     turns: [],
     growth: 0,
     food: pickFreeCell(cols, rows, [...snake, ...cpu.body], random),
+    extraFoods: [],
     special: null,
     drops: [],
     foodsEaten: 0,
@@ -250,6 +436,18 @@ export function createGame(cols: number, rows: number, random: () => number): Ga
     kos: 0,
     cpu,
     deathAt: null,
+    peakLength: snake.length,
+    cards: {},
+    draft: null,
+    draftsTaken: 0,
+    lastDraftAt: 0,
+    nextDraftAt: rules.firstDraftBeans,
+    shield: false,
+    shieldBeans: 0,
+    graceUntil: 0,
+    playerSlowUntil: 0,
+    rimReadyAt: 0,
+    tailCutReadyAt: 0,
   };
 }
 
@@ -273,26 +471,124 @@ export function turn(state: GameState, next: Direction): void {
   }
 }
 
-export function togglePause(state: GameState): void {
+export function togglePause(state: GameState, now = 0): void {
   if (state.phase === 'playing') {
     state.phase = 'paused';
   } else if (state.phase === 'paused') {
     state.phase = 'playing';
+    if (now > 0) {
+      state.graceUntil = Math.max(state.graceUntil, now + rules.resumeGraceMs * 0.6);
+    }
   } else if (state.phase === 'ready') {
     state.phase = 'playing';
   }
 }
 
-/** A bean grows the snake two cells, plus one more for every two links of combo, up to two more. */
-export function beanGrowth(combo: number): number {
-  return rules.beanGrowth + Math.min(rules.maxComboBonus, Math.floor(combo / 2));
+/** A bean grows the snake one cell, plus one more for every two links of combo, up to two more. */
+export function beanGrowth(combo: number, decafLevel = 0): number {
+  const decafBonus = decafLevel >= 3 ? 2 : decafLevel >= 1 ? 1 : 0;
+  return rules.beanGrowth + decafBonus + Math.min(rules.maxComboBonus, Math.floor(combo / 2));
+}
+
+function comboWindow(state: GameState): number {
+  return rules.comboWindowMs + cardLevel(state, 'double-shot') * 1500;
 }
 
 function bumpCombo(state: GameState, now: number, by = 1): void {
   const alive = state.combo > 0 && now <= state.comboExpiresAt;
   state.combo = (alive ? state.combo : 0) + by;
-  state.comboExpiresAt = now + rules.comboWindowMs;
+  state.comboExpiresAt = now + comboWindow(state);
   state.maxCombo = Math.max(state.maxCombo, state.combo);
+}
+
+/** Picks up to three distinct cards that have not reached max level yet. */
+export function drawDraftCards(state: GameState, random: () => number): CardId[] {
+  const pool = CARD_IDS.filter((id) => cardLevel(state, id) < rules.maxCardLevel);
+  const picked: CardId[] = [];
+
+  while (pool.length > 0 && picked.length < rules.draftChoices) {
+    const index = Math.floor(random() * pool.length);
+    const [card] = pool.splice(index, 1);
+
+    if (card) {
+      picked.push(card);
+    }
+  }
+
+  return picked;
+}
+
+function syncExtraFoods(state: GameState, random: () => number): void {
+  const level = cardLevel(state, 'double-shot');
+  const target = level >= 3 ? 2 : level >= 1 ? 1 : 0;
+
+  while (state.extraFoods.length < target) {
+    state.extraFoods.push(pickFreeCell(state.cols, state.rows, occupied(state), random));
+  }
+}
+
+function scatterDrops(state: GameState, segments: readonly Point[], limit: number): void {
+  let added = 0;
+
+  for (const segment of segments) {
+    if (added >= limit) {
+      break;
+    }
+
+    const taken =
+      state.snake.some((part) => samePoint(part, segment)) ||
+      samePoint(state.food, segment) ||
+      state.extraFoods.some((part) => samePoint(part, segment)) ||
+      state.drops.some((existing) => samePoint(existing, segment));
+
+    if (!taken && inside(state, segment)) {
+      state.drops.push({ ...segment });
+      added += 1;
+    }
+  }
+}
+
+/**
+ * Applies a chosen card from the active draft (or directly in tests), triggering any
+ * immediate effect and granting a brief soft-start window.
+ */
+export function pickCard(
+  state: GameState,
+  id: CardId,
+  now = 0,
+  random: () => number = Math.random,
+): boolean {
+  if (state.draft && !state.draft.includes(id)) {
+    return false;
+  }
+
+  const nextLevel = Math.min(rules.maxCardLevel, cardLevel(state, id) + 1);
+  state.cards[id] = nextLevel;
+  state.draft = null;
+  state.graceUntil = Math.max(state.graceUntil, now + rules.resumeGraceMs);
+
+  if (id === 'ristretto') {
+    const ratio = nextLevel === 1 ? 0.25 : nextLevel === 2 ? 0.3 : 0.35;
+    const preCompressPeak = Math.max(state.peakLength, state.snake.length);
+
+    if (state.snake.length > 4) {
+      const cut = Math.max(1, Math.min(state.snake.length - 4, Math.round(state.snake.length * ratio)));
+      const removed = state.snake.splice(state.snake.length - cut, cut);
+      scatterDrops(state, removed, 3);
+    }
+
+    state.peakLength = preCompressPeak + 3;
+  } else if (id === 'velvet-foam') {
+    state.shield = true;
+    state.shieldBeans = 0;
+  } else if (id === 'double-shot') {
+    syncExtraFoods(state, random);
+    if (state.combo > 0 && now <= state.comboExpiresAt) {
+      state.comboExpiresAt += 1500;
+    }
+  }
+
+  return true;
 }
 
 function chooseCpuDirection(state: GameState, random: () => number): Direction {
@@ -343,7 +639,12 @@ function stepCpu(state: GameState, random: () => number, now: number, events: Ga
   if (!cpu.alive) {
     if (now >= cpu.respawnAt) {
       const best = cpu.best;
-      state.cpu = createCpu(state.cols, state.rows, [...state.snake, state.food, ...state.drops], random);
+      state.cpu = createCpu(
+        state.cols,
+        state.rows,
+        [...state.snake, state.food, ...state.extraFoods, ...state.drops],
+        random,
+      );
       state.cpu.best = Math.max(best, state.cpu.best);
     }
 
@@ -378,18 +679,7 @@ function stepCpu(state: GameState, random: () => number, now: number, events: Ga
       state.kos += 1;
       state.growth += rules.cpuKoGrowth;
       bumpCombo(state, now);
-
-      for (const drop of remains) {
-        const taken =
-          state.snake.some((segment) => samePoint(segment, drop)) ||
-          samePoint(state.food, drop) ||
-          state.drops.some((existing) => samePoint(existing, drop));
-
-        if (!taken) {
-          state.drops.push({ ...drop });
-        }
-      }
-
+      scatterDrops(state, remains, 3);
       events.push({ type: 'ko', at: head, combo: state.combo });
     }
 
@@ -399,13 +689,22 @@ function stepCpu(state: GameState, random: () => number, now: number, events: Ga
   cpu.body.unshift(next);
 
   if (samePoint(next, state.food)) {
-    cpu.growth += rules.beanGrowth;
+    cpu.growth += 2;
     state.food = pickFreeCell(state.cols, state.rows, occupied(state), random);
     events.push({ type: 'cpu-ate', at: next });
-  } else if (state.special && samePoint(next, state.special.point)) {
-    cpu.growth += 3;
-    state.special = null;
-    events.push({ type: 'cpu-ate', at: next });
+  } else {
+    const extraIndex = state.extraFoods.findIndex((bean) => samePoint(bean, next));
+
+    if (extraIndex !== -1) {
+      cpu.growth += 2;
+      state.extraFoods.splice(extraIndex, 1);
+      syncExtraFoods(state, random);
+      events.push({ type: 'cpu-ate', at: next });
+    } else if (state.special && samePoint(next, state.special.point)) {
+      cpu.growth += 3;
+      state.special = null;
+      events.push({ type: 'cpu-ate', at: next });
+    }
   }
 
   if (cpu.growth > 0) {
@@ -417,12 +716,179 @@ function stepCpu(state: GameState, random: () => number, now: number, events: Ga
   cpu.best = Math.max(cpu.best, cpu.body.length);
 }
 
+function isSafeCell(state: GameState, body: readonly Point[], point: Point): boolean {
+  return (
+    inside(state, point) &&
+    !body.some((segment) => samePoint(segment, point)) &&
+    !(state.cpu.alive && state.cpu.body.some((segment) => samePoint(segment, point)))
+  );
+}
+
+function tryCremaRimTurn(state: GameState, body: readonly Point[], now: number): Direction | null {
+  const level = cardLevel(state, 'crema-rim');
+
+  if (level <= 0 || now < state.rimReadyAt) {
+    return null;
+  }
+
+  const head = state.snake[0]!;
+  const candidates: Direction[] =
+    state.direction.x !== 0
+      ? [DIRECTIONS.up, DIRECTIONS.down]
+      : [DIRECTIONS.left, DIRECTIONS.right];
+
+  const open = candidates.filter((dir) =>
+    isSafeCell(state, body, { x: head.x + dir.x, y: head.y + dir.y }),
+  );
+
+  if (open.length === 0) {
+    return null;
+  }
+
+  // Pick whichever perpendicular turn has more clearance to the wall in that direction.
+  let chosen = open[0]!;
+  let bestRoom = -1;
+
+  for (const dir of open) {
+    let steps = 0;
+    let probe = { x: head.x + dir.x, y: head.y + dir.y };
+
+    while (isSafeCell(state, body, probe) && steps < 10) {
+      steps += 1;
+      probe = { x: probe.x + dir.x, y: probe.y + dir.y };
+    }
+
+    if (steps > bestRoom) {
+      bestRoom = steps;
+      chosen = dir;
+    }
+  }
+
+  const cooldown = level === 1 ? 6000 : level === 2 ? 4000 : 2500;
+  state.rimReadyAt = now + cooldown;
+  return chosen;
+}
+
+function onBeanEaten(
+  state: GameState,
+  at: Point,
+  now: number,
+  random: () => number,
+  events: GameEvent[],
+): void {
+  bumpCombo(state, now);
+  const gain = beanGrowth(state.combo, cardLevel(state, 'decaf-pace'));
+  state.growth += gain;
+  state.foodsEaten += 1;
+  events.push({ type: 'bean', at, combo: state.combo, gain });
+
+  const foamLevel = cardLevel(state, 'velvet-foam');
+
+  if (foamLevel > 0 && !state.shield) {
+    const needed = foamLevel === 1 ? 6 : foamLevel === 2 ? 5 : 4;
+    state.shieldBeans += 1;
+
+    if (state.shieldBeans >= needed) {
+      state.shield = true;
+      state.shieldBeans = 0;
+    }
+  }
+
+  if (state.foodsEaten % rules.specialSpawnEvery === 0 && !state.special) {
+    const kind: SpecialKind =
+      (state.foodsEaten / rules.specialSpawnEvery) % 2 === 1 ? 'espresso' : 'coldbrew';
+    state.special = {
+      point: pickFreeCell(state.cols, state.rows, occupied(state), random),
+      kind,
+      bornAt: now,
+      expiresAt: now + rules.specialDurationMs,
+    };
+  }
+
+  if (state.foodsEaten >= state.nextDraftAt && state.draft === null) {
+    const cards = drawDraftCards(state, random);
+    state.lastDraftAt = state.nextDraftAt;
+    state.draftsTaken += 1;
+    const interval = Math.min(rules.maxDraftInterval, rules.firstDraftBeans + state.draftsTaken);
+    state.nextDraftAt += interval;
+
+    if (cards.length > 0) {
+      state.draft = cards;
+      events.push({ type: 'draft', at, cards });
+    }
+  }
+}
+
+function inMagnetRange(head: Point, target: Point, level: number): boolean {
+  const dx = Math.abs(head.x - target.x);
+  const dy = Math.abs(head.y - target.y);
+
+  if (level === 1) {
+    return dx + dy <= 1;
+  }
+
+  if (level === 2) {
+    return Math.max(dx, dy) <= 1;
+  }
+
+  return dx + dy <= 2;
+}
+
+function applyAffogatoPull(
+  state: GameState,
+  head: Point,
+  now: number,
+  random: () => number,
+  events: GameEvent[],
+): void {
+  const level = cardLevel(state, 'affogato-pull');
+
+  if (level <= 0) {
+    return;
+  }
+
+  // Pull nearby drops first.
+  for (let index = state.drops.length - 1; index >= 0; index -= 1) {
+    const drop = state.drops[index]!;
+
+    if (inMagnetRange(head, drop, level)) {
+      state.drops.splice(index, 1);
+      state.growth += rules.dropGrowth;
+      bumpCombo(state, now);
+      events.push({ type: 'drop', at: drop, combo: state.combo });
+    }
+  }
+
+  // Pull primary bean if within range.
+  if (inMagnetRange(head, state.food, level)) {
+    const beanAt = state.food;
+    state.food = pickFreeCell(state.cols, state.rows, occupied(state), random);
+    onBeanEaten(state, beanAt, now, random, events);
+  }
+
+  // Pull any extra beans from Double Shot.
+  for (let index = state.extraFoods.length - 1; index >= 0; index -= 1) {
+    const extra = state.extraFoods[index]!;
+
+    if (inMagnetRange(head, extra, level)) {
+      state.extraFoods.splice(index, 1);
+      syncExtraFoods(state, random);
+      onBeanEaten(state, extra, now, random, events);
+    }
+  }
+}
+
 /** Advances the round by one step and reports what happened, for the renderer to answer. */
 export function step(state: GameState, random: () => number, now: number): GameEvent[] {
   const events: GameEvent[] = [];
 
   if (state.phase !== 'playing') {
     return events;
+  }
+
+  // Headless callers (autopilot demo and tests) that step without a UI pick the first card.
+  if (state.draft !== null && state.draft.length > 0) {
+    pickCard(state, state.draft[0]!, now, random);
   }
 
   if (state.special && now >= state.special.expiresAt) {
@@ -440,15 +906,77 @@ export function step(state: GameState, random: () => number, now: number): GameE
   }
 
   const head = state.snake[0]!;
-  const nextHead = { x: head.x + state.direction.x, y: head.y + state.direction.y };
+  let nextHead = { x: head.x + state.direction.x, y: head.y + state.direction.y };
   // The tail leaves its cell on this same step unless the snake is growing.
   const body = state.growth > 0 ? state.snake : state.snake.slice(0, -1);
 
-  if (
-    !inside(state, nextHead) ||
-    body.some((segment) => samePoint(segment, nextHead)) ||
-    (state.cpu.alive && state.cpu.body.some((segment) => samePoint(segment, nextHead)))
-  ) {
+  // Crema Rim: auto-turn before hitting a wall.
+  if (!inside(state, nextHead)) {
+    const rimDir = tryCremaRimTurn(state, body, now);
+
+    if (rimDir) {
+      state.direction = rimDir;
+      state.turns = [];
+      nextHead = { x: head.x + rimDir.x, y: head.y + rimDir.y };
+      events.push({ type: 'wall-turn', at: head });
+    }
+  }
+
+  // Paper Filter: crossing the ghost tail cuts it into drops instead of crashing.
+  const bodyHitIndex = body.findIndex((segment) => samePoint(segment, nextHead));
+  const ghostCount = ghostTailCount(state);
+  const hitGhostTail =
+    bodyHitIndex !== -1 &&
+    ghostCount > 0 &&
+    now >= state.tailCutReadyAt &&
+    bodyHitIndex >= body.length - ghostCount;
+
+  if (hitGhostTail) {
+    const cutSegments = state.snake.splice(bodyHitIndex);
+    state.tailCutReadyAt = now + rules.tailCutCooldownMs;
+    scatterDrops(state, cutSegments.slice(1), 3);
+    bumpCombo(state, now);
+    events.push({ type: 'tail-cut', at: nextHead, combo: state.combo });
+  }
+
+  const fatalWall = !inside(state, nextHead);
+  const fatalBody = !hitGhostTail && bodyHitIndex !== -1;
+  const fatalCpu = state.cpu.alive && state.cpu.body.some((segment) => samePoint(segment, nextHead));
+
+  if (fatalWall || fatalBody || fatalCpu) {
+    if (state.shield) {
+      state.shield = false;
+      state.shieldBeans = 0;
+      state.graceUntil = Math.max(state.graceUntil, now + 900);
+      const keep = Math.max(3, state.snake.length - rules.shieldCost);
+      state.snake.splice(keep);
+
+      const trimmedBody = state.snake.slice(0, -1);
+      const escape = Object.values(DIRECTIONS).find(
+        (dir) =>
+          !isReverse(dir, state.direction) &&
+          isSafeCell(state, trimmedBody, { x: head.x + dir.x, y: head.y + dir.y }),
+      );
+
+      if (escape) {
+        state.direction = escape;
+        state.turns = [];
+      } else {
+        // Flip the body so the former tail becomes the head facing open space.
+        state.snake.reverse();
+        const newHead = state.snake[0]!;
+        const neck = state.snake[1] ?? newHead;
+        state.direction = {
+          x: Math.sign(newHead.x - neck.x) || DIRECTIONS.right.x,
+          y: Math.sign(newHead.y - neck.y) || 0,
+        };
+        state.turns = [];
+      }
+
+      events.push({ type: 'shield-break', at: head });
+      return events;
+    }
+
     state.phase = 'over';
     state.deathAt = nextHead;
     events.push({ type: 'death', at: nextHead });
@@ -458,52 +986,55 @@ export function step(state: GameState, random: () => number, now: number): GameE
   state.snake.unshift(nextHead);
 
   if (samePoint(nextHead, state.food)) {
-    bumpCombo(state, now);
-    state.growth += beanGrowth(state.combo);
-    state.foodsEaten += 1;
     state.food = pickFreeCell(state.cols, state.rows, occupied(state), random);
-    events.push({ type: 'bean', at: nextHead, combo: state.combo });
-
-    if (state.foodsEaten % rules.specialSpawnEvery === 0 && !state.special) {
-      const kind: SpecialKind =
-        (state.foodsEaten / rules.specialSpawnEvery) % 2 === 1 ? 'espresso' : 'coldbrew';
-      state.special = {
-        point: pickFreeCell(state.cols, state.rows, occupied(state), random),
-        kind,
-        bornAt: now,
-        expiresAt: now + rules.specialDurationMs,
-      };
-    }
-  } else if (state.special && samePoint(nextHead, state.special.point)) {
-    const kind = state.special.kind;
-    state.special = null;
-
-    if (kind === 'espresso') {
-      state.growth += rules.espressoGrowth;
-      bumpCombo(state, now, 2);
-    } else {
-      state.growth += rules.coldbrewGrowth;
-      bumpCombo(state, now);
-      state.cpu.slowUntil = now + rules.cpuSlowMs;
-    }
-
-    events.push({ type: 'special', at: nextHead, kind, combo: state.combo });
+    onBeanEaten(state, nextHead, now, random, events);
   } else {
-    const dropIndex = state.drops.findIndex((drop) => samePoint(drop, nextHead));
+    const extraIndex = state.extraFoods.findIndex((bean) => samePoint(bean, nextHead));
 
-    if (dropIndex !== -1) {
-      state.drops.splice(dropIndex, 1);
-      state.growth += rules.dropGrowth;
-      bumpCombo(state, now);
-      events.push({ type: 'drop', at: nextHead, combo: state.combo });
+    if (extraIndex !== -1) {
+      state.extraFoods.splice(extraIndex, 1);
+      syncExtraFoods(state, random);
+      onBeanEaten(state, nextHead, now, random, events);
+    } else if (state.special && samePoint(nextHead, state.special.point)) {
+      const kind = state.special.kind;
+      state.special = null;
+
+      if (kind === 'espresso') {
+        state.growth += rules.espressoGrowth;
+        bumpCombo(state, now, 2);
+      } else {
+        state.growth += rules.coldbrewGrowth;
+        bumpCombo(state, now);
+        const infusion = cardLevel(state, 'cold-infusion');
+        state.cpu.slowUntil = now + rules.cpuSlowMs + infusion * 1000;
+
+        if (infusion > 0) {
+          state.playerSlowUntil = now + rules.playerChillMs + (infusion - 1) * 1500;
+        }
+      }
+
+      events.push({ type: 'special', at: nextHead, kind, combo: state.combo });
+    } else {
+      const dropIndex = state.drops.findIndex((drop) => samePoint(drop, nextHead));
+
+      if (dropIndex !== -1) {
+        state.drops.splice(dropIndex, 1);
+        state.growth += rules.dropGrowth;
+        bumpCombo(state, now);
+        events.push({ type: 'drop', at: nextHead, combo: state.combo });
+      }
     }
   }
+
+  applyAffogatoPull(state, nextHead, now, random, events);
 
   if (state.growth > 0) {
     state.growth -= 1;
-  } else {
+  } else if (!hitGhostTail) {
     state.snake.pop();
   }
+
+  state.peakLength = Math.max(state.peakLength, state.snake.length);
 
   stepCpu(state, random, now, events);
   return events;

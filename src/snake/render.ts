@@ -1,5 +1,5 @@
 import { easeOut, progressOf, type Effect, type Tone } from './effects';
-import type { Cpu, Direction, GameState, Grid, Point, Special } from './game';
+import { ghostTailCount, type Cpu, type Direction, type GameState, type Grid, type Point, type Special } from './game';
 
 /** Paper, ink and one crema accent: the same three colours as the lucasflatwhite.com board. */
 export const palette = {
@@ -299,9 +299,11 @@ function drawPlayer(ctx: CanvasRenderingContext2D, scene: Scene, cell: number): 
   const gulp = reducedMotion ? null : gulpOffset(scene.effects, now);
   const inset = Math.max(1.5, cell * 0.08);
   const radius = Math.min(6, cell * 0.22);
+  const ghostCount = now >= state.tailCutReadyAt ? ghostTailCount(state) : 0;
 
   for (let index = length - 1; index >= 0; index -= 1) {
     const segment = state.snake[index]!;
+    const isGhost = ghostCount > 0 && index >= length - ghostCount;
     let alpha = 1 - (index / Math.max(1, length)) * 0.45;
     let grow = 0;
 
@@ -318,7 +320,6 @@ function drawPlayer(ctx: CanvasRenderingContext2D, scene: Scene, cell: number): 
     }
 
     const size = cell - inset * 2 + grow * 2;
-    ctx.globalAlpha = alpha;
     roundedRect(
       ctx,
       segment.x * cell + inset - grow,
@@ -327,8 +328,23 @@ function drawPlayer(ctx: CanvasRenderingContext2D, scene: Scene, cell: number): 
       size,
       radius,
     );
-    ctx.fillStyle = palette.ink;
-    ctx.fill();
+
+    if (isGhost && overAt === null) {
+      ctx.save();
+      ctx.globalAlpha = alpha * 0.35;
+      ctx.fillStyle = palette.ink;
+      ctx.fill();
+      ctx.globalAlpha = Math.min(1, alpha * 0.85);
+      ctx.lineWidth = Math.max(1.2, cell * 0.06);
+      ctx.setLineDash([Math.max(2, cell * 0.12), Math.max(2, cell * 0.1)]);
+      ctx.strokeStyle = palette.cremaDeep;
+      ctx.stroke();
+      ctx.restore();
+    } else {
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = palette.ink;
+      ctx.fill();
+    }
   }
 
   ctx.globalAlpha = 1;
@@ -336,11 +352,33 @@ function drawPlayer(ctx: CanvasRenderingContext2D, scene: Scene, cell: number): 
   const head = state.snake[0];
 
   if (head && overAt === null) {
-    drawEye(ctx, head, state.direction, cell);
+    if (state.shield) {
+      ctx.save();
+      roundedRect(
+        ctx,
+        head.x * cell + inset * 0.5,
+        head.y * cell + inset * 0.5,
+        cell - inset,
+        cell - inset,
+        radius + 1,
+      );
+      ctx.lineWidth = Math.max(2, cell * 0.1);
+      ctx.strokeStyle = palette.crema;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    drawEye(ctx, head, state.direction, cell, now < state.playerSlowUntil);
   }
 }
 
-function drawEye(ctx: CanvasRenderingContext2D, head: Point, direction: Direction, cell: number): void {
+function drawEye(
+  ctx: CanvasRenderingContext2D,
+  head: Point,
+  direction: Direction,
+  cell: number,
+  chilled = false,
+): void {
   ctx.beginPath();
   ctx.arc(
     (head.x + 0.5 + direction.x * 0.18) * cell,
@@ -349,7 +387,7 @@ function drawEye(ctx: CanvasRenderingContext2D, head: Point, direction: Directio
     0,
     Math.PI * 2,
   );
-  ctx.fillStyle = palette.crema;
+  ctx.fillStyle = chilled ? palette.cold : palette.crema;
   ctx.fill();
 }
 
@@ -435,6 +473,10 @@ export function drawScene(
   }
 
   drawBean(ctx, (state.food.x + 0.5) * cell, (state.food.y + 0.5) * cell, cell);
+
+  for (const extra of state.extraFoods) {
+    drawBean(ctx, (extra.x + 0.5) * cell, (extra.y + 0.5) * cell, cell);
+  }
 
   if (state.special) {
     drawSpecial(ctx, state.special, cell, now);

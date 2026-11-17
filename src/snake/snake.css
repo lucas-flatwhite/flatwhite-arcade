@@ -97,6 +97,11 @@ body.play {
   text-align: center;
 }
 
+.overlay-card.is-draft {
+  width: min(100%, 396px);
+  padding: 20px 18px 18px;
+}
+
 .overlay-title {
   margin: 0;
   font-size: 2rem;
@@ -113,6 +118,79 @@ body.play {
   margin: 0;
   color: var(--ink-dim);
   font-size: 0.9rem;
+}
+
+.draft-kicker {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.draft-list {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.draft-option {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.draft-option[hidden] {
+  display: none;
+}
+
+.draft-option:hover,
+.draft-option:focus-visible,
+.draft-option.is-selected {
+  border-color: var(--ink);
+  background: var(--card);
+  outline: none;
+  box-shadow: inset 3px 0 0 var(--crema);
+}
+
+.draft-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.draft-name {
+  font-size: 0.94rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.draft-badge {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--crema);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+.draft-desc {
+  color: var(--ink-dim);
+  font-size: 0.8rem;
+  line-height: 1.35;
 }
 
 .hint-touch {
@@ -196,6 +274,14 @@ body.play {
 .over-duel {
   font-family: var(--font-mono);
   font-size: 0.8rem;
+}
+
+.over-cards {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--ink-dim);
+  line-height: 1.4;
 }
 
 .over-best {

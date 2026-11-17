@@ -56,8 +56,10 @@ export function effectsFor(
   const combo = (count: number): string => (count >= 2 ? ` · ${count}x` : '');
 
   switch (event.type) {
-    case 'bean':
-      return [ring('crema'), gulp, label(`+${beanGrowth(event.combo)}${combo(event.combo)}`, 'ink')];
+    case 'bean': {
+      const gain = event.gain ?? beanGrowth(event.combo);
+      return [ring('crema'), gulp, label(`+${gain}${combo(event.combo)}`, 'ink')];
+    }
     case 'drop':
       return [ring('crema'), gulp, label(`+2${combo(event.combo)}`, 'ink')];
     case 'special':
@@ -68,6 +70,18 @@ export function effectsFor(
       return [ring('ink'), label(`KO +3${combo(event.combo)}`, 'ink')];
     case 'cpu-ate':
       return [ring('rival')];
+    case 'draft':
+      return [ring('crema'), label('tasting note', 'crema')];
+    case 'shield-break':
+      return [
+        ring('crema'),
+        label('saved!', 'crema'),
+        { kind: 'shake', bornAt: now, duration: effectTiming.shakeMs },
+      ];
+    case 'tail-cut':
+      return [ring('crema'), label(`tail cut${combo(event.combo)}`, 'crema')];
+    case 'wall-turn':
+      return [ring('crema'), label('rim turn', 'crema')];
     case 'death':
       return [ring('ink'), { kind: 'shake', bornAt: now, duration: effectTiming.shakeMs }];
   }

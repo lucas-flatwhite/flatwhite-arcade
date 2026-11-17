@@ -11,6 +11,10 @@ const events: GameEvent[] = [
   { type: 'special', at, kind: 'coldbrew', combo: 1 },
   { type: 'ko', at, combo: 1 },
   { type: 'cpu-ate', at },
+  { type: 'draft', at, cards: ['ristretto', 'paper-filter', 'velvet-foam'] },
+  { type: 'shield-break', at },
+  { type: 'tail-cut', at, combo: 2 },
+  { type: 'wall-turn', at },
   { type: 'death', at },
 ];
 
@@ -34,10 +38,12 @@ describe('effects', () => {
     const label = (event: GameEvent) =>
       effectsFor(event, 0, 10).find((effect): effect is Extract<Effect, { kind: 'label' }> => effect.kind === 'label')?.text;
 
-    expect(label({ type: 'bean', at, combo: 1 })).toBe('+2');
-    expect(label({ type: 'bean', at, combo: 4 })).toBe('+4 · 4x');
+    expect(label({ type: 'bean', at, combo: 1 })).toBe('+1');
+    expect(label({ type: 'bean', at, combo: 4 })).toBe('+3 · 4x');
     expect(label({ type: 'special', at, kind: 'espresso', combo: 3 })).toBe('espresso +4 · 3x');
     expect(label({ type: 'ko', at, combo: 1 })).toBe('KO +3');
+    expect(label({ type: 'shield-break', at })).toBe('saved!');
+    expect(label({ type: 'tail-cut', at, combo: 2 })).toBe('tail cut · 2x');
   });
 
   it('floats a label beside a snake heading up or down, so the head never runs into it', () => {

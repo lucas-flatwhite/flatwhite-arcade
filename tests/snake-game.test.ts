@@ -4,6 +4,8 @@ import {
   createGame,
   createRandom,
   fitGrid,
+  ghostTailCount,
+  pickCard,
   rules,
   step,
   stepMs,
@@ -123,26 +125,25 @@ describe('moving', () => {
     expect(state.phase).toBe('playing');
   });
 
-  it('speeds up from 7 to 12 steps a second as the snake grows', () => {
-    expect(stepMs(3)).toBeCloseTo(1000 / 7);
-    expect(stepMs(7)).toBeCloseTo(1000 / 8);
-    expect(stepMs(200)).toBeCloseTo(1000 / 12);
+  it('speeds up gradually from 6.5 to 11 steps a second as the snake grows', () => {
+    expect(stepMs(3)).toBeCloseTo(1000 / 6.5);
+    expect(stepMs(10)).toBeCloseTo(1000 / 7.5);
+    expect(stepMs(200)).toBeCloseTo(1000 / 11);
   });
 });
 
 describe('eating', () => {
-  it('grows two cells for a bean and chains a combo inside the window', () => {
+  it('grows one cell for a bean and chains a combo inside the window', () => {
     const state = soloGame();
     start(state);
     const head = state.snake[0]!;
     state.food = { x: head.x + 1, y: head.y };
 
     const events = step(state, createRandom(1), 1000);
-    expect(events).toEqual([{ type: 'bean', at: { x: head.x + 1, y: head.y }, combo: 1 }]);
+    expect(events).toEqual([{ type: 'bean', at: { x: head.x + 1, y: head.y }, combo: 1, gain: 1 }]);
 
     step(state, createRandom(1), 1100);
-    step(state, createRandom(1), 1200);
-    expect(state.snake).toHaveLength(5);
+    expect(state.snake).toHaveLength(4);
 
     const next = state.snake[0]!;
     state.food = { x: next.x + 1, y: next.y };
@@ -228,5 +229,126 @@ describe('the rival', () => {
     step(state, createRandom(5), 10);
     expect(state.cpu.alive).toBe(true);
     expect(state.cpu.best).toBe(9);
+  });
+});
+
+describe('barista card draft and survival blends', () => {
+  it('opens a three-card draft on progressive bean milestones (4, then +5 = 9)', () => {
+    const state = soloGame();
+    start(state);
+    state.foodsEaten = 3;
+    const head = state.snake[0]!;
+    state.food = { x: head.x + 1, y: head.y };
+
+    const events = step(state, createRandom(9), 100);
+    expect(events.some((event) => event.type === 'draft')).toBe(true);
+    expect(state.draft).toHaveLength(3);
+    expect(state.lastDraftAt).toBe(4);
+    expect(state.nextDraftAt).toBe(9);
+
+    const chosen = state.draft![0]!;
+    expect(pickCard(state, chosen, 100, createRandom(9))).toBe(true);
+    expect(state.draft).toBeNull();
+    expect(state.cards[chosen]).toBe(1);
+    expect(state.graceUntil).toBeGreaterThan(100);
+  });
+
+  it('compresses body with Ristretto while boosting peakLength and dropping crema', () => {
+    const state = soloGame();
+    start(state);
+    state.snake = [
+      { x: 10, y: 5 },
+      { x: 9, y: 5 },
+      { x: 8, y: 5 },
+      { x: 7, y: 5 },
+      { x: 6, y: 5 },
+      { x: 5, y: 5 },
+      { x: 4, y: 5 },
+      { x: 3, y: 5 },
+    ];
+    state.peakLength = 8;
+
+    pickCard(state, 'ristretto', 500, createRandom(2));
+    expect(state.snake).toHaveLength(6);
+    expect(state.peakLength).toBe(11);
+    expect(state.drops.length).toBeGreaterThan(0);
+  });
+
+  it('lets the head cut through ghost tail cells with Paper Filter instead of dying', () => {
+    const state = soloGame();
+    start(state);
+    pickCard(state, 'paper-filter', 0);
+    // A loop of 8 segments where the head is about to step onto index 6 (within the last 4 tail cells).
+    state.snake = [
+      { x: 5, y: 5 },
+      { x: 5, y: 4 },
+      { x: 6, y: 4 },
+      { x: 6, y: 5 },
+      { x: 6, y: 6 },
+      { x: 5, y: 6 },
+      { x: 4, y: 5 },
+      { x: 4, y: 6 },
+    ];
+    state.direction = DIRECTIONS.left;
+    expect(ghostTailCount(state)).toBe(4);
+
+    const events = step(state, createRandom(4), 3000);
+    expect(state.phase).toBe('playing');
+    expect(events.some((event) => event.type === 'tail-cut')).toBe(true);
+    expect(state.snake.length).toBeLessThan(8);
+  });
+
+  it('auto-turns along a wall when Crema Rim is ready', () => {
+    const state = soloGame();
+    start(state);
+    pickCard(state, 'crema-rim', 0);
+    state.snake = [{ x: 19, y: 5 }, { x: 18, y: 5 }, { x: 17, y: 5 }];
+    state.direction = DIRECTIONS.right;
+
+    const events = step(state, createRandom(5), 7000);
+    expect(state.phase).toBe('playing');
+    expect(events.some((event) => event.type === 'wall-turn')).toBe(true);
+    expect(state.snake[0]!.x).toBe(19);
+    expect(state.snake[0]!.y).not.toBe(5);
+  });
+
+  it('survives a fatal crash with Velvet Foam shield and recharges after eating beans', () => {
+    const state = soloGame();
+    start(state);
+    pickCard(state, 'velvet-foam', 0);
+    expect(state.shield).toBe(true);
+
+    // Trap against the top-right corner with no Crema Rim.
+    state.snake = [
+      { x: 19, y: 0 },
+      { x: 18, y: 0 },
+      { x: 17, y: 0 },
+      { x: 16, y: 0 },
+      { x: 15, y: 0 },
+      { x: 14, y: 0 },
+    ];
+    state.direction = DIRECTIONS.right;
+
+    const events = step(state, createRandom(6), 1000);
+    expect(state.phase).toBe('playing');
+    expect(state.shield).toBe(false);
+    expect(events.some((event) => event.type === 'shield-break')).toBe(true);
+    expect(state.snake).toHaveLength(3);
+  });
+
+  it('pulls adjacent beans and drops with Affogato Pull and spawns extra beans with Double Shot', () => {
+    const state = soloGame();
+    start(state);
+    pickCard(state, 'affogato-pull', 0);
+    pickCard(state, 'double-shot', 0, createRandom(8));
+
+    expect(state.extraFoods).toHaveLength(1);
+
+    const head = state.snake[0]!;
+    // Place a drop one cell above the next head position (within Manhattan range 1).
+    state.drops = [{ x: head.x + 1, y: head.y - 1 }];
+    const events = step(state, createRandom(8), 2000);
+    expect(events.some((event) => event.type === 'drop')).toBe(true);
+    expect(state.drops).toHaveLength(0);
   });
 });
