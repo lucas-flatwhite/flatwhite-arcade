@@ -11,7 +11,7 @@ body.play {
 
 .game-bar {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr minmax(0, auto) 1fr;
   align-items: center;
   gap: 12px;
   min-height: 52px;
@@ -25,11 +25,17 @@ body.play {
 }
 
 .game-score {
+  min-width: 0;
+  max-width: 100%;
   margin: 0;
   font-family: var(--font-mono);
   font-size: 0.82rem;
+  line-height: 1.25;
   letter-spacing: 0.04em;
+  text-align: center;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .game-pause {
@@ -296,12 +302,21 @@ body.play {
   color: var(--ink);
 }
 
-@media (max-width: 420px) {
+@media (max-width: 600px) {
   .game-bar {
-    padding-inline: 12px;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 8px;
   }
 
   .game-score {
-    font-size: 0.74rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+    white-space: normal;
+  }
+}
+
+@media (max-width: 420px) {
+  .game-bar {
+    padding-inline: 12px;
   }
 }

@@ -46,6 +46,12 @@ describe('snake page', () => {
     expect(styles).toContain('body.play {\n  overflow: hidden;');
   });
 
+  it('constrains the score column so long HUD text cannot push the bar wider than a phone screen', () => {
+    expect(styles).toContain('grid-template-columns: 1fr minmax(0, auto) 1fr;');
+    expect(styles).toContain('grid-template-columns: auto minmax(0, 1fr) auto;');
+    expect(styles).toMatch(/\.game-score \{[^}]*min-width: 0;/);
+  });
+
   it('no longer ships the word field or its layout engine', () => {
     expect(pkg.dependencies).not.toHaveProperty('@chenglou/pretext');
     expect(page).not.toContain('data-experience');
